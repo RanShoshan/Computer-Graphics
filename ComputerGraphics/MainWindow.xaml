@@ -14,30 +14,30 @@
 		<ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
 			<ToolBar Background="AntiqueWhite">
 				<Button Content="Clear" Padding="10"/>
-				<Button>
+				<ToggleButton x:Name="btnBrush">
 					<Image 
 						Source="pack://application:,,,/icons/brush.png" 
 						Height="30" 
 						Width="30"/>					
-				</Button>
-				<Button>
+				</ToggleButton>
+				<ToggleButton x:Name="btnPaintcan">
 					<Image 
 						Source="pack://application:,,,/icons/paintcan.png" 
 						Height="30" 
 						Width="30"/>
-				</Button>
-				<Button>
+				</ToggleButton>
+				<ToggleButton>
 					<Image 
 						Source="pack://application:,,,/icons/line.png" 
 						Height="30" 
 						Width="30"/>
-				</Button>
-				<Button>
+				</ToggleButton>
+				<ToggleButton x:Name="btnCircle">
 					<Image 
 						Source="pack://application:,,,/icons/circle.png" 
 						Height="30" 
 						Width="30"/>
-				</Button>
+				</ToggleButton>
 			</ToolBar>
 		</ToolBarTray>
 		<TextBox AcceptsReturn="True" />
