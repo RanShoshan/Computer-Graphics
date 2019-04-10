@@ -93,5 +93,17 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\paintcan.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\brush.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\line.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\circle.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

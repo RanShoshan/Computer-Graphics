@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Best Painter Ever" 
 		WindowState="Maximized">
-	
+
 	<!--This is where we bind out events and other stuff to the buttons-->
 	<!--<Window.CommandBindings>
 		<CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" />
@@ -11,18 +11,39 @@
 		<CommandBinding Command="Save" CanExecute="CommonCommandBinding_CanExecute" />
 	</Window.CommandBindings>-->
 	<DockPanel>
-		<ToolBarTray DockPanel.Dock="Top">
-			<ToolBar>
-				<Button Command="New" Content="New" />
-				<Button Command="Open" Content="Open" />
-				<Button Command="Save" Content="Save" />
-			</ToolBar>
-			<ToolBar>
-				<Button Command="Cut" Content="Cut" />
-				<Button Command="Copy" Content="Copy" />
-				<Button Command="Paste" Content="Paste" />
+		<ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
+			<ToolBar Background="AntiqueWhite">
+				<Button Content="Clear" Padding="10"/>
+				<Button>
+					<Image 
+						Source="pack://application:,,,/icons/brush.png" 
+						Height="30" 
+						Width="30"/>					
+				</Button>
+				<Button>
+					<Image 
+						Source="pack://application:,,,/icons/paintcan.png" 
+						Height="30" 
+						Width="30"/>
+				</Button>
+				<Button>
+					<Image 
+						Source="pack://application:,,,/icons/line.png" 
+						Height="30" 
+						Width="30"/>
+				</Button>
+				<Button>
+					<Image 
+						Source="pack://application:,,,/icons/circle.png" 
+						Height="30" 
+						Width="30"/>
+				</Button>
 			</ToolBar>
 		</ToolBarTray>
 		<TextBox AcceptsReturn="True" />
+
+		<Canvas Background="White">
+
+		</Canvas>
 	</DockPanel>
 </Window>
