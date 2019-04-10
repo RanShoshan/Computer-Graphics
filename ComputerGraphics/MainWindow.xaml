@@ -1,8 +1,10 @@
 ﻿<Window x:Class="ComputerGraphics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="The Most Awsome Indy Painter Ever In The History Of The World" 
+        Title="Best Painter Ever" 
 		WindowState="Maximized">
+	
+	<!--This is where we bind out events and other stuff to the buttons-->
 	<!--<Window.CommandBindings>
 		<CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" />
 		<CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" />
