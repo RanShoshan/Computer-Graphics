@@ -1,0 +1,49 @@
+﻿<Window x:Class="ComputerGraphics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Best Painter Ever" 
+		WindowState="Maximized">
+
+    <!--This is where we bind out events and other stuff to the buttons-->
+    <!--<Window.CommandBindings>
+		<CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" />
+		<CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" />
+		<CommandBinding Command="Save" CanExecute="CommonCommandBinding_CanExecute" />
+	</Window.CommandBindings>-->
+    <DockPanel>
+        <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
+            <ToolBar Background="AntiqueWhite">
+                <Button Content="Clear" Padding="10"/>
+                <ToggleButton x:Name="btnBrush">
+                    <Image 
+						Source="pack://application:,,,/icons/brush.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton x:Name="btnPaintcan">
+                    <Image 
+						Source="pack://application:,,,/icons/paintcan.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton>
+                    <Image 
+						Source="pack://application:,,,/icons/line.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton x:Name="btnCircle">
+                    <Image 
+						Source="pack://application:,,,/icons/circle.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+            </ToolBar>
+        </ToolBarTray>
+        <TextBox AcceptsReturn="True" />
+
+        <Canvas Background="White">
+
+        </Canvas>
+    </DockPanel>
+</Window>
