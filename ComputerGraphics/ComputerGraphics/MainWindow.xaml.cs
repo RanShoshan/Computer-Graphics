@@ -9,12 +9,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace ComputerGraphics
-{
+namespace ComputerGraphics {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
+   
 
     public enum UserState
     {
@@ -23,16 +23,28 @@ namespace ComputerGraphics
         BTN_LINE_2ST_CLICK = 2,
         BTN_CIRCLE_1ST_CLICK ,
         BTN_CIRCLE_2ST_CLICK ,
+        BTN_BEZIER_1ST_CLICK,
+        BTN_BEZIER_2ND_CLICK,
+        BTN_BEZIER_3RD_CLICK,
+        BTN_BEZIER_4TH_CLICK
     }
 
-    public partial class MainWindow : Window
-    {
+    public class Bezier {
+        public Point cp1, cp2, cp3, cp4;
+
+    }
+
+    public partial class MainWindow : Window {
+
         public UserState state = UserState.NONE;
         public Point lastPoint = new Point();
+        public Bezier bezier = new Bezier();
 
         public MainWindow()
         {
             InitializeComponent();
+            tbBezierNumOfLines.IsEnabled = false;
+            //implement this //ToggleOffAllButtons();
         }
         
 
@@ -72,8 +84,11 @@ namespace ComputerGraphics
             state = UserState.BTN_LINE_1ST_CLICK;
         }
 
+        public void OnBtnBezierClicked(object sender, RoutedEventArgs e) {
 
-
+            state = UserState.BTN_BEZIER_1ST_CLICK;
+            tbBezierNumOfLines.IsEnabled = true;
+        }
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
@@ -110,6 +125,7 @@ namespace ComputerGraphics
                     Line(lastPoint, e.GetPosition(myCanvas));
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
+
                 case UserState.BTN_CIRCLE_1ST_CLICK:
                     lastPoint = e.GetPosition(myCanvas);
                     state = UserState.BTN_CIRCLE_2ST_CLICK;
@@ -118,9 +134,31 @@ namespace ComputerGraphics
                     Circle(lastPoint, e.GetPosition(myCanvas));
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
+
+                case UserState.BTN_BEZIER_1ST_CLICK:
+                    state = UserState.BTN_BEZIER_2ND_CLICK;
+                    bezier.cp1 = e.GetPosition(myCanvas);
+                    break;
+                case UserState.BTN_BEZIER_2ND_CLICK:
+                    state = UserState.BTN_BEZIER_3RD_CLICK;
+                    bezier.cp2 = e.GetPosition(myCanvas);
+                    break;
+                case UserState.BTN_BEZIER_3RD_CLICK:
+                    state = UserState.BTN_BEZIER_4TH_CLICK;
+                    bezier.cp3 = e.GetPosition(myCanvas);
+                    break;
+                case UserState.BTN_BEZIER_4TH_CLICK:
+                    bezier.cp4 = e.GetPosition(myCanvas);
+                    DrawBezierCurve(bezier);
+
+                    break;
                 default:
                     break;
             }
+
+        }
+
+        public void DrawBezierCurve(Bezier b) {
 
         }
 
@@ -138,6 +176,12 @@ namespace ComputerGraphics
 
         }
 
+        public void ToggleOffAllButtons() {
+            foreach (var item in mainToolbar.Items) {
+                if (item is Button)
+                    ;
+            }
+        }
         
     }
 }
