@@ -3,7 +3,8 @@
  * &
  * shay rubach 305687352
  */
- 
+
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -14,19 +15,22 @@ namespace ComputerGraphics
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+
         public MainWindow()
         {
             InitializeComponent();
 
 
-            for (int i = 0; i < 500; i++) {
-                SetPixel(100 + i, 100 + i);
-            }
+            
             
             
         }
 
+        public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
+            for (int i = 0; i < 500; i++) {
+                SetPixel(100 + i, 100 + i);
+            }
+        }
 
         private void SetPixel(int x, int y) {
 
@@ -40,6 +44,7 @@ namespace ComputerGraphics
             myCanvas.Children.Add(rect);
         }
 
+        
     }
 
 
