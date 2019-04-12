@@ -7,32 +7,80 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ComputerGraphics
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+
+    public enum UserState
+    {
+        NONE = 0,
+        BTN_LINE_1ST_CLICK = 1,
+        BTN_LINE_2ST_CLICK = 2,
+    }
+
     public partial class MainWindow : Window
     {
-
+        public UserState state = UserState.NONE;
+        public Point lastPoint = new Point();
         public MainWindow()
         {
             InitializeComponent();
-
-
-            
-            
+  
             
         }
 
         public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
-            for (int i = 0; i < 500; i++) {
-                SetPixel(100 + i, 100 + i);
+
+            state = UserState.BTN_LINE_1ST_CLICK;
+        }
+
+        private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
+
+        public void Line(Point p1, Point p2)
+        {
+            int x0 = Convert.ToInt32(p1.X);
+            int y0 = Convert.ToInt32(p1.Y);
+            int x1 = Convert.ToInt32(p2.X);
+            int y1 = Convert.ToInt32(p2.Y);
+            bool steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
+            if (steep) { Swap<int>(ref x0, ref y0); Swap<int>(ref x1, ref y1); }
+            if (x0 > x1) { Swap<int>(ref x0, ref x1); Swap<int>(ref y0, ref y1); }
+            int dX = (x1 - x0), dY = Math.Abs(y1 - y0), err = (dX / 2), ystep = (y0 < y1 ? 1 : -1), y = y0;
+
+            for (int x = x0; x <= x1; ++x)
+            {
+                if (!(steep ? SetPixel(y, x) : SetPixel(x, y))) return;
+                err = err - dY;
+                if (err < 0) { y += ystep; err += dX; }
             }
         }
 
-        private void SetPixel(int x, int y) {
+        public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            switch (state)
+            {
+                case UserState.NONE:
+                    break;
+                case UserState.BTN_LINE_1ST_CLICK:
+                    lastPoint = e.GetPosition(myCanvas);
+                    state = UserState.BTN_LINE_2ST_CLICK;
+                    break;
+                case UserState.BTN_LINE_2ST_CLICK:
+                    Line(lastPoint, e.GetPosition(myCanvas));
+                    state = UserState.BTN_LINE_1ST_CLICK;
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        private bool SetPixel(int x, int y) {
 
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
             rect.Stroke = System.Windows.Media.Brushes.Blue;
@@ -42,11 +90,10 @@ namespace ComputerGraphics
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             myCanvas.Children.Add(rect);
+            return true;
+
         }
 
         
     }
-
-
-
 }
