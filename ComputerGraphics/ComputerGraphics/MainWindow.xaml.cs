@@ -29,9 +29,16 @@ namespace ComputerGraphics {
         BTN_BEZIER_4TH_CLICK
     }
 
+    public enum PixelStyle
+    {
+        DEFAULT = 0,
+        BOLD
+    }
+
+    
+
     public class Bezier {
         public Point cp1, cp2, cp3, cp4;
-
     }
 
     public partial class MainWindow : Window {
@@ -39,6 +46,9 @@ namespace ComputerGraphics {
         public UserState state = UserState.NONE;
         public Point lastPoint = new Point();
         public Bezier bezier = new Bezier();
+
+        public const int STROKE_BOLD = 10;
+
 
         public MainWindow()
         {
@@ -138,17 +148,21 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = e.GetPosition(myCanvas);
+                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = e.GetPosition(myCanvas);
+                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = e.GetPosition(myCanvas);
+                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = e.GetPosition(myCanvas);
+                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
                     DrawBezierCurve(bezier);
 
                     break;
@@ -162,13 +176,20 @@ namespace ComputerGraphics {
 
         }
 
-        private bool SetPixel(int x, int y) {
+        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT) {
 
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
             rect.Stroke = System.Windows.Media.Brushes.Blue;
-            rect.StrokeThickness = 1;
-            rect.Width = 1;
-            rect.Height = 1;
+            if(style == PixelStyle.BOLD) {
+                rect.StrokeThickness = STROKE_BOLD;
+                rect.Width = STROKE_BOLD;
+                rect.Height = STROKE_BOLD;
+            }
+            else {
+                rect.StrokeThickness = 1;
+                rect.Width = 1;
+                rect.Height = 1;
+            }
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             myCanvas.Children.Add(rect);
