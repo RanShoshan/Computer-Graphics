@@ -42,7 +42,7 @@
         </ToolBarTray>
         <TextBox AcceptsReturn="True" />
 
-        <Canvas Background="White">
+        <Canvas Background="White" x:Name="myCanvas">
 
         </Canvas>
     </DockPanel>
