@@ -99,5 +99,8 @@
     <Resource Include="icons\line.png" />
     <Resource Include="icons\paintcan.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\bizier.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
