@@ -13,7 +13,7 @@
     <DockPanel>
         <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite">
-                <Button Content="Clear" Padding="10"/>
+                <Button Content="Clear" Click="OnBtnClearClicked" Padding="10"/>
                 <ToggleButton x:Name="btnBrush">
                     <Image 
 						Source="pack://application:,,,/icons/brush.png" 

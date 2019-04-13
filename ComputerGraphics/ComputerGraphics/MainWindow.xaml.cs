@@ -57,9 +57,14 @@ namespace ComputerGraphics {
             tbBezierNumOfLines.IsEnabled = false;
             //implement this //ToggleOffAllButtons();
         }
+
+
         
+        public void OnBtnClearClicked(object sender, RoutedEventArgs e)
+        {
 
-
+            myCanvas.Children.Clear();
+        }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
         {
