@@ -67,7 +67,7 @@ namespace ComputerGraphics {
         }
 
 
-        public void Circle(Point p1, Point p2)
+        public void DrawCircle(Point p1, Point p2)
         {
             int xCenter = Convert.ToInt32(p2.X);
             int yCenter = Convert.ToInt32(p2.Y);
@@ -141,7 +141,7 @@ namespace ComputerGraphics {
                     state = UserState.BTN_CIRCLE_2ST_CLICK;
                     break;
                 case UserState.BTN_CIRCLE_2ST_CLICK:
-                    Circle(lastPoint, e.GetPosition(myCanvas));
+                    DrawCircle(lastPoint, e.GetPosition(myCanvas));
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
 
