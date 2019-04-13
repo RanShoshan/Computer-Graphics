@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -163,7 +164,7 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = e.GetPosition(myCanvas);
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
-                    DrawBezierCurve(bezier);
+                    DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
 
                     break;
                 default:
@@ -172,8 +173,25 @@ namespace ComputerGraphics {
 
         }
 
-        public void DrawBezierCurve(Bezier b) {
+        public void DrawBezierCurve(Bezier b , string smoothingRate)
+        {
+            var lineStart = new Point(0, 0);
+            var lineEnd = new Point(0, 0);
+            var bezierPoints = new List<Point>();
+            double smoothingrate = 1.0 / Convert.ToDouble(smoothingRate);
 
+            for (double t = 0.0; t <= 1.0; t = t + smoothingrate)
+            {
+                var put_x = Math.Pow(1 - t, 3) * b.cp1.X + 3 * t * Math.Pow(1 - t, 2) * b.cp2.X + 3 * t * t * (1 - t) * b.cp3.X + Math.Pow(t, 3) * b.cp4.X; // Formula to draw curve
+                var put_y = Math.Pow(1 - t, 3) * b.cp1.Y + 3 * t * Math.Pow(1 - t, 2) * b.cp2.Y + 3 * t * t * (1 - t) * b.cp3.Y + Math.Pow(t, 3) * b.cp4.Y;
+                bezierPoints.Add(new Point(put_x, put_y));
+            }
+
+            for (int i = 0; i < bezierPoints.Count - 1; i++)
+            {
+                Line(bezierPoints[i], bezierPoints[i + 1]);
+            }
+            Line(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
 
         private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT) {
