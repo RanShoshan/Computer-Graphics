@@ -108,7 +108,7 @@ namespace ComputerGraphics {
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
-        public void Line(Point p1, Point p2)
+        public void DrawLine(Point p1, Point p2)
         {
             int x0 = Convert.ToInt32(p1.X);
             int y0 = Convert.ToInt32(p1.Y);
@@ -138,7 +138,7 @@ namespace ComputerGraphics {
                     state = UserState.BTN_LINE_2ST_CLICK;
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
-                    Line(lastPoint, e.GetPosition(myCanvas));
+                    DrawLine(lastPoint, e.GetPosition(myCanvas));
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
@@ -194,9 +194,9 @@ namespace ComputerGraphics {
 
             for (int i = 0; i < bezierPoints.Count - 1; i++)
             {
-                Line(bezierPoints[i], bezierPoints[i + 1]);
+                DrawLine(bezierPoints[i], bezierPoints[i + 1]);
             }
-            Line(bezierPoints[bezierPoints.Count - 1], b.cp4);
+            DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
 
         private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT) {
