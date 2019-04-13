@@ -14,13 +14,13 @@
         <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite">
                 <Button Content="Clear" Click="OnBtnClearClicked" Padding="10"/>
-                <ToggleButton x:Name="btnBrush">
+                <ToggleButton x:Name="btnBrush" Click="OnBtnBrushClicked">
                     <Image 
 						Source="pack://application:,,,/icons/brush.png" 
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnPaintcan">
+                <ToggleButton x:Name="btnPaintcan" Click="OnBtnPaintcanClicked">
                     <Image 
 						Source="pack://application:,,,/icons/paintcan.png" 
 						Height="30" 
