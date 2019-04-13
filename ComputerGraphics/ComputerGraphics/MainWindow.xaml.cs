@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace ComputerGraphics {
@@ -55,20 +56,20 @@ namespace ComputerGraphics {
         {
             InitializeComponent();
             tbBezierNumOfLines.IsEnabled = false;
-            //implement this //ToggleOffAllButtons();
         }
 
 
         
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
         {
-
+            state = UserState.NONE;
+            ToggleOffAllButtons();
             myCanvas.Children.Clear();
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
         {
-
+            ToggleOffAllButtons(btnCircle);
             state = UserState.BTN_CIRCLE_1ST_CLICK;
         }
 
@@ -96,12 +97,12 @@ namespace ComputerGraphics {
         
 
         public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
-
+            ToggleOffAllButtons(btnLine);
             state = UserState.BTN_LINE_1ST_CLICK;
         }
 
         public void OnBtnBezierClicked(object sender, RoutedEventArgs e) {
-
+            ToggleOffAllButtons(btnBizier);
             state = UserState.BTN_BEZIER_1ST_CLICK;
             tbBezierNumOfLines.IsEnabled = true;
         }
@@ -220,10 +221,16 @@ namespace ComputerGraphics {
 
         }
 
-        public void ToggleOffAllButtons() {
+        public void ToggleOffAllButtons(ToggleButton activeBtn = null) {
+
             foreach (var item in mainToolbar.Items) {
-                if (item is Button)
-                    ;
+                if(item is ToggleButton) {
+                    ((ToggleButton)item).IsChecked = false;
+                }
+            }
+
+            if (activeBtn != null) {
+                activeBtn.IsChecked = true;
             }
         }
         
