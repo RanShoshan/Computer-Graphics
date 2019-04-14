@@ -73,6 +73,16 @@ namespace ComputerGraphics {
             state = UserState.BTN_CIRCLE_1ST_CLICK;
         }
 
+        public void OnBtnBrushClicked(object sender, RoutedEventArgs e)
+        {
+            ToggleOffAllButtons(btnBrush);
+        }
+
+        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e)
+        {
+            ToggleOffAllButtons(btnPaintcan);
+        }
+
 
         public void DrawCircle(Point p1, Point p2)
         {
