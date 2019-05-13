@@ -247,28 +247,28 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD);
+                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD);
+                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD);
+                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
+                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
                 default:
                     break;
             }
-            UpdateAnchorPoint(p);
+            //UpdateAnchorPoint(p);
         }
         
         public void DrawBezierCurve(Bezier b , string smoothingRate)
@@ -295,14 +295,18 @@ namespace ComputerGraphics {
         }
 
         private void RemoveBezierGuidePoints(Bezier b) {
-            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White);
-            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White);
-            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White);
-            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White);
+            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White, false);
         }
 
-        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null) {
+        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
 
+            if (updateAnchor) {
+                Point p = new Point(x, y);
+                UpdateAnchorPoint(p);
+            }
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
             rect.Stroke = color ?? Brushes.Blue;
             if(style == PixelStyle.BOLD) {
@@ -382,15 +386,17 @@ namespace ComputerGraphics {
         private void UpdateAnchorPoint(Point p) {
             anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
+            Console.WriteLine("p = " + p.X + "," + p.Y);
+            Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
         }
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
-                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange);
+                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
                 lastAnchorPoint = anchorPoint;
             }
             else {
-                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White);
+                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White, false);
             }
             
         }
