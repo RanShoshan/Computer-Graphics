@@ -51,15 +51,15 @@ namespace ComputerGraphics {
         public UserState state = UserState.NONE;
         public Point lastPoint = new Point();
         public Bezier bezier = new Bezier();
-        public string tempFilePath = "\\tempWorkingFilePath.txt";
-        public string pwd = Directory.GetCurrentDirectory();
+        private static string pwd = Directory.GetCurrentDirectory();
+        public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
 
-        public void Print(string str)
+        public void WriteToTrackingFile(string str)
         {
             string path = Directory.GetCurrentDirectory();
-            File.AppendAllText(pwd + tempFilePath, str);
+            File.AppendAllText(tempFilePath, str);
         }
 
         public MainWindow()
@@ -79,7 +79,7 @@ namespace ComputerGraphics {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
-            File.Delete(pwd + tempFilePath);
+            File.Delete(tempFilePath);
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
@@ -164,7 +164,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, e.GetPosition(myCanvas));
-                    Print("some format");
+                    WriteToTrackingFile("some format");
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
@@ -278,9 +278,10 @@ namespace ComputerGraphics {
         }
 
         private void SaveFile(string fileName) {
-            File.Delete(currentWorkingFile);
-            File.Copy(Directory.GetCurrentDirectory() + tempFilePath, currentWorkingFile);
-
+            if(File.Exists(tempFilePath) && File.Exists(currentWorkingFile)) {
+                File.Delete(currentWorkingFile);
+                File.Copy(tempFilePath, currentWorkingFile);
+            }
         }
 
     }
