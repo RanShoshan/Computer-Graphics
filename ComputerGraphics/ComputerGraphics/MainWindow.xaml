@@ -14,6 +14,8 @@
         <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite">
                 <Button Content="Clear" Click="OnBtnClearClicked" Padding="10"/>
+                <Button Content="Save" Click="OnBtnSaveClicked" Padding="10"/>
+                <Button Content="Load" Click="OnBtnLoadClicked" Padding="10"/>
                 <ToggleButton x:Name="btnBrush" Click="OnBtnBrushClicked" Visibility="Hidden">
                     <Image 
 						Source="pack://application:,,,/icons/brush.png" 
