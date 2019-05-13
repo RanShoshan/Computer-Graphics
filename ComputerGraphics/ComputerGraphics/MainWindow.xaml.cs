@@ -11,8 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.IO;
-using System.Text;
+using System.Windows.Media;
 
 namespace ComputerGraphics {
     /// <summary>
@@ -58,6 +57,8 @@ namespace ComputerGraphics {
         public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
+        private Point lastAnchorPoint = new Point();
+        private Point anchorPoint = new Point();
 
 
 
@@ -132,7 +133,7 @@ namespace ComputerGraphics {
             myCanvas.Children.Clear();
             File.Delete(tempFilePath);
             CreatNewTxtFile();
-
+            anchorPoint.X = anchorPoint.Y = 0;
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
@@ -218,46 +219,48 @@ namespace ComputerGraphics {
 
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
         {
+            Point p = e.GetPosition(myCanvas);
+
             switch (state)
             {
                 case UserState.NONE:
                     break;
                 case UserState.BTN_LINE_1ST_CLICK:
-                    lastPoint = e.GetPosition(myCanvas);
+                    lastPoint = p;
                     state = UserState.BTN_LINE_2ST_CLICK;
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
-                    DrawLine(lastPoint, e.GetPosition(myCanvas));
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(e.GetPosition(myCanvas)));
+                    DrawLine(lastPoint, p);
+                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p));
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
                 case UserState.BTN_CIRCLE_1ST_CLICK:
-                    lastPoint = e.GetPosition(myCanvas);
+                    lastPoint = p;
                     state = UserState.BTN_CIRCLE_2ST_CLICK;
                     break;
                 case UserState.BTN_CIRCLE_2ST_CLICK:
-                    DrawCircle(lastPoint, e.GetPosition(myCanvas));
+                    DrawCircle(lastPoint, p);
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
 
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
-                    bezier.cp1 = e.GetPosition(myCanvas);
+                    bezier.cp1 = p;
                     SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
-                    bezier.cp2 = e.GetPosition(myCanvas);
+                    bezier.cp2 = p;
                     SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
-                    bezier.cp3 = e.GetPosition(myCanvas);
+                    bezier.cp3 = p;
                     SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
-                    bezier.cp4 = e.GetPosition(myCanvas);
+                    bezier.cp4 = p;
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
                     state = UserState.BTN_BEZIER_1ST_CLICK;
@@ -265,15 +268,17 @@ namespace ComputerGraphics {
                 default:
                     break;
             }
-
+            UpdateAnchorPoint(p);
         }
-
+        
         public void DrawBezierCurve(Bezier b , string smoothingRate)
         {
             var lineStart = new Point(0, 0);
             var lineEnd = new Point(0, 0);
             var bezierPoints = new List<Point>();
             double smoothingrate = 1.0 / Convert.ToDouble(smoothingRate);
+
+            RemoveBezierGuidePoints(b);
 
             for (double t = 0.0; t <= 1.0; t = t + smoothingrate)
             {
@@ -289,10 +294,17 @@ namespace ComputerGraphics {
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
 
-        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT) {
+        private void RemoveBezierGuidePoints(Bezier b) {
+            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White);
+            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White);
+            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White);
+            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White);
+        }
+
+        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null) {
 
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
-            rect.Stroke = System.Windows.Media.Brushes.Blue;
+            rect.Stroke = color ?? Brushes.Blue;
             if(style == PixelStyle.BOLD) {
                 rect.StrokeThickness = STROKE_BOLD;
                 rect.Width = STROKE_BOLD;
@@ -321,6 +333,8 @@ namespace ComputerGraphics {
             if (activeBtn != null) {
                 activeBtn.IsChecked = true;
             }
+
+            ShowAnchorPoint(false);
         }
 
         public void OnBtnSaveClicked(object sender, RoutedEventArgs e) {
@@ -350,16 +364,35 @@ namespace ComputerGraphics {
         public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnScale);
             state = UserState.SCALE;
+            ShowAnchorPoint();
         }
 
         public void OnBtnStrechClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnStrech);
             state = UserState.STRECH;
+            ShowAnchorPoint();
         }
 
         public void OnBtnRotateClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnRotate);
             state = UserState.ROTATE;
+            ShowAnchorPoint();
+        }
+
+        private void UpdateAnchorPoint(Point p) {
+            anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
+            anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
+        }
+
+        private void ShowAnchorPoint(bool show = true) {
+            if (show == true) {
+                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange);
+                lastAnchorPoint = anchorPoint;
+            }
+            else {
+                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White);
+            }
+            
         }
 
     }
