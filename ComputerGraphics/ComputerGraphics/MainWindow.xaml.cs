@@ -56,10 +56,58 @@ namespace ComputerGraphics {
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
 
+
+
+
+
         public void WriteToTrackingFile(string str)
         {
-            string path = Directory.GetCurrentDirectory();
-            File.AppendAllText(tempFilePath, str);
+            var inFile = File.Open(tempFilePath, FileMode.Open, FileAccess.ReadWrite);
+            StreamReader reader = new StreamReader(inFile);
+            StreamWriter sw = new StreamWriter(inFile);
+
+            string record;
+
+            try
+            {
+                //the program reads the record and displays it on the screen
+                record = reader.ReadLine();
+                while (record != null)
+                {
+                    if (record.Contains("Lines"))
+                    {
+                        sw.WriteLine(str);
+                        //File.AppendAllText(tempFilePath, str);
+
+                    }
+                    record = reader.ReadLine();
+                }
+            }
+            finally
+            {
+                //after the record is done being read, the progam closes
+                reader.Close();
+                inFile.Close();
+            }
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        public void CreatNewTxtFile()
+        {
+            File.AppendAllText(tempFilePath, "Lines: \r\n");
+            File.AppendAllText(tempFilePath, "Circle: \r\n");
+            File.AppendAllText(tempFilePath, "Bezier: \r\n");
         }
 
         public MainWindow()
@@ -80,6 +128,8 @@ namespace ComputerGraphics {
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
             File.Delete(tempFilePath);
+            CreatNewTxtFile();
+
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
@@ -152,6 +202,17 @@ namespace ComputerGraphics {
             }
         }
 
+        public string PointToIntToString(Point p)
+        {
+            int x = Convert.ToInt32(p.X);
+            int y = Convert.ToInt32(p.Y);
+
+            string strx = x.ToString();
+            string stry = y.ToString();
+            return strx + ',' + stry;
+
+        }
+
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
         {
             switch (state)
@@ -164,7 +225,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, e.GetPosition(myCanvas));
-                    WriteToTrackingFile("some format");
+                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(e.GetPosition(myCanvas)));
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
