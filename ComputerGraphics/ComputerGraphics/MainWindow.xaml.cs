@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.IO;
+using System.Text;
 
 namespace ComputerGraphics {
     /// <summary>
@@ -37,7 +39,7 @@ namespace ComputerGraphics {
         BOLD
     }
 
-    
+
 
     public class Bezier {
         public Point cp1, cp2, cp3, cp4;
@@ -48,21 +50,37 @@ namespace ComputerGraphics {
         public UserState state = UserState.NONE;
         public Point lastPoint = new Point();
         public Bezier bezier = new Bezier();
+        public string tempFilePath = "\\tempWorkingFilePath.txt";
+        public string pwd = Directory.GetCurrentDirectory();
 
         public const int STROKE_BOLD = 10;
+
+        public void Print(string str)
+        {
+            string path = Directory.GetCurrentDirectory();
+            File.AppendAllText(pwd + tempFilePath, str);
+
+        }
 
 
         public MainWindow()
         {
             InitializeComponent();
             tbBezierNumOfLines.IsEnabled = false;
+            Clear();
         }
 
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
         {
+            Clear();
+        }
+
+        public void Clear()
+        {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
+            File.Delete(pwd + tempFilePath);
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
@@ -147,6 +165,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, e.GetPosition(myCanvas));
+                    Print("abc ");
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
