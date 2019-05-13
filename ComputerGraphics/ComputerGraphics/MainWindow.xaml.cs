@@ -58,8 +58,6 @@ namespace ComputerGraphics {
             tbBezierNumOfLines.IsEnabled = false;
         }
 
-
-        
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
         {
             state = UserState.NONE;
@@ -104,7 +102,6 @@ namespace ComputerGraphics {
             }
 
         }
-        
 
         public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnLine);
@@ -181,7 +178,7 @@ namespace ComputerGraphics {
                     bezier.cp4 = e.GetPosition(myCanvas);
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
-
+                    state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
                 default:
                     break;
