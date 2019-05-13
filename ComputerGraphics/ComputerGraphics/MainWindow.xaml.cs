@@ -59,53 +59,25 @@ namespace ComputerGraphics {
         public const int STROKE_BOLD = 10;
         private Point lastAnchorPoint = new Point();
         private Point anchorPoint = new Point();
+        private const string TYPE_LINE_KEY = "Lines";
+        private const string TYPE_CIRCLE_KEY = "Circle";
+        private const string TYPE_BEZIER_KEY = "Bezier";
 
-
-
-
-
-        public void WriteToTrackingFile(string str)
+        public void WriteToTrackingFile(string str, string shapeKey)
         {
-            var inFile = File.Open(tempFilePath, FileMode.Open, FileAccess.ReadWrite);
-            StreamReader reader = new StreamReader(inFile);
-            StreamWriter sw = new StreamWriter(inFile);
-
-            string record;
-
-            try
-            {
-                //the program reads the record and displays it on the screen
-                record = reader.ReadLine();
-                while (record != null)
-                {
-                    if (record.Contains("Lines"))
-                    {
-                        sw.WriteLine(str);
-                        //File.AppendAllText(tempFilePath, str);
-
-                    }
-                    record = reader.ReadLine();
+            string[] full_file = File.ReadAllLines(tempFilePath);
+            List<string> lines = new List<string>();
+            int lineNum = 0;
+            lines.AddRange(full_file);
+            for (int i = 0; i < lines.Count; i++) {
+                if (lines[i].Contains(shapeKey)) {
+                    lineNum = i;
+                    break;
                 }
             }
-            finally
-            {
-                //after the record is done being read, the progam closes
-                reader.Close();
-                inFile.Close();
-            }
-
-
+            lines.Insert(lineNum+1, str);
+            File.WriteAllLines(tempFilePath, lines.ToArray());
         }
-
-
-
-
-
-
-
-
-
-
 
         public void CreatNewTxtFile()
         {
@@ -231,7 +203,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, p);
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p));
+                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), TYPE_LINE_KEY);
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
