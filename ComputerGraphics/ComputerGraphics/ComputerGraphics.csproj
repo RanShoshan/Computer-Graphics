@@ -102,5 +102,14 @@
   <ItemGroup>
     <Resource Include="icons\bizier.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\scale.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\strech.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\rotate.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

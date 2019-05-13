@@ -31,7 +31,10 @@ namespace ComputerGraphics {
         BTN_BEZIER_1ST_CLICK,
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
-        BTN_BEZIER_4TH_CLICK
+        BTN_BEZIER_4TH_CLICK,
+        SCALE,
+        STRECH,
+        ROTATE
     }
 
     public enum PixelStyle
@@ -343,6 +346,20 @@ namespace ComputerGraphics {
                 File.Delete(currentWorkingFile);
                 File.Copy(tempFilePath, currentWorkingFile);
             }
+        }
+        public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnScale);
+            state = UserState.SCALE;
+        }
+
+        public void OnBtnStrechClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnStrech);
+            state = UserState.STRECH;
+        }
+
+        public void OnBtnRotateClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnRotate);
+            state = UserState.ROTATE;
         }
 
     }
