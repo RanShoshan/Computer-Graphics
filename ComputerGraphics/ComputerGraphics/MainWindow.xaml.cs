@@ -11,8 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.IO;
-using System.Text;
+using System.Windows.Media;
 
 namespace ComputerGraphics {
     /// <summary>
@@ -31,7 +30,10 @@ namespace ComputerGraphics {
         BTN_BEZIER_1ST_CLICK,
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
-        BTN_BEZIER_4TH_CLICK
+        BTN_BEZIER_4TH_CLICK,
+        SCALE,
+        STRECH,
+        ROTATE
     }
 
     public enum PixelStyle
@@ -55,53 +57,27 @@ namespace ComputerGraphics {
         public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
+        private Point lastAnchorPoint = new Point();
+        private Point anchorPoint = new Point();
+        private const string TYPE_LINE_KEY = "Lines";
+        private const string TYPE_CIRCLE_KEY = "Circle";
+        private const string TYPE_BEZIER_KEY = "Bezier";
 
-
-
-
-
-        public void WriteToTrackingFile(string str)
+        public void WriteToTrackingFile(string str, string shapeKey)
         {
-            var inFile = File.Open(tempFilePath, FileMode.Open, FileAccess.ReadWrite);
-            StreamReader reader = new StreamReader(inFile);
-            StreamWriter sw = new StreamWriter(inFile);
-
-            string record;
-
-            try
-            {
-                //the program reads the record and displays it on the screen
-                record = reader.ReadLine();
-                while (record != null)
-                {
-                    if (record.Contains("Lines"))
-                    {
-                        sw.WriteLine(str);
-                        //File.AppendAllText(tempFilePath, str);
-
-                    }
-                    record = reader.ReadLine();
+            string[] full_file = File.ReadAllLines(tempFilePath);
+            List<string> lines = new List<string>();
+            int lineNum = 0;
+            lines.AddRange(full_file);
+            for (int i = 0; i < lines.Count; i++) {
+                if (lines[i].Contains(shapeKey)) {
+                    lineNum = i;
+                    break;
                 }
             }
-            finally
-            {
-                //after the record is done being read, the progam closes
-                reader.Close();
-                inFile.Close();
-            }
-
-
+            lines.Insert(lineNum+1, str);
+            File.WriteAllLines(tempFilePath, lines.ToArray());
         }
-
-
-
-
-
-
-
-
-
-
 
         public void CreatNewTxtFile()
         {
@@ -129,7 +105,7 @@ namespace ComputerGraphics {
             myCanvas.Children.Clear();
             File.Delete(tempFilePath);
             CreatNewTxtFile();
-
+            anchorPoint.X = anchorPoint.Y = 0;
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
@@ -215,62 +191,66 @@ namespace ComputerGraphics {
 
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
         {
+            Point p = e.GetPosition(myCanvas);
+
             switch (state)
             {
                 case UserState.NONE:
                     break;
                 case UserState.BTN_LINE_1ST_CLICK:
-                    lastPoint = e.GetPosition(myCanvas);
+                    lastPoint = p;
                     state = UserState.BTN_LINE_2ST_CLICK;
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
-                    DrawLine(lastPoint, e.GetPosition(myCanvas));
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(e.GetPosition(myCanvas)));
+                    DrawLine(lastPoint, p);
+                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), TYPE_LINE_KEY);
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
                 case UserState.BTN_CIRCLE_1ST_CLICK:
-                    lastPoint = e.GetPosition(myCanvas);
+                    lastPoint = p;
                     state = UserState.BTN_CIRCLE_2ST_CLICK;
                     break;
                 case UserState.BTN_CIRCLE_2ST_CLICK:
-                    DrawCircle(lastPoint, e.GetPosition(myCanvas));
+                    DrawCircle(lastPoint, p);
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
 
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
-                    bezier.cp1 = e.GetPosition(myCanvas);
-                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD);
+                    bezier.cp1 = p;
+                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
-                    bezier.cp2 = e.GetPosition(myCanvas);
-                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD);
+                    bezier.cp2 = p;
+                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
-                    bezier.cp3 = e.GetPosition(myCanvas);
-                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD);
+                    bezier.cp3 = p;
+                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
-                    bezier.cp4 = e.GetPosition(myCanvas);
-                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD);
+                    bezier.cp4 = p;
+                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
                 default:
                     break;
             }
-
+            //UpdateAnchorPoint(p);
         }
-
+        
         public void DrawBezierCurve(Bezier b , string smoothingRate)
         {
             var lineStart = new Point(0, 0);
             var lineEnd = new Point(0, 0);
             var bezierPoints = new List<Point>();
             double smoothingrate = 1.0 / Convert.ToDouble(smoothingRate);
+
+            RemoveBezierGuidePoints(b);
 
             for (double t = 0.0; t <= 1.0; t = t + smoothingrate)
             {
@@ -286,10 +266,21 @@ namespace ComputerGraphics {
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
 
-        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT) {
+        private void RemoveBezierGuidePoints(Bezier b) {
+            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White, false);
+            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White, false);
+        }
 
+        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
+
+            if (updateAnchor) {
+                Point p = new Point(x, y);
+                UpdateAnchorPoint(p);
+            }
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
-            rect.Stroke = System.Windows.Media.Brushes.Blue;
+            rect.Stroke = color ?? Brushes.Blue;
             if(style == PixelStyle.BOLD) {
                 rect.StrokeThickness = STROKE_BOLD;
                 rect.Width = STROKE_BOLD;
@@ -318,6 +309,8 @@ namespace ComputerGraphics {
             if (activeBtn != null) {
                 activeBtn.IsChecked = true;
             }
+
+            ShowAnchorPoint(false);
         }
 
         public void OnBtnSaveClicked(object sender, RoutedEventArgs e) {
@@ -343,6 +336,41 @@ namespace ComputerGraphics {
                 File.Delete(currentWorkingFile);
                 File.Copy(tempFilePath, currentWorkingFile);
             }
+        }
+        public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnScale);
+            state = UserState.SCALE;
+            ShowAnchorPoint();
+        }
+
+        public void OnBtnStrechClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnStrech);
+            state = UserState.STRECH;
+            ShowAnchorPoint();
+        }
+
+        public void OnBtnRotateClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnRotate);
+            state = UserState.ROTATE;
+            ShowAnchorPoint();
+        }
+
+        private void UpdateAnchorPoint(Point p) {
+            anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
+            anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
+            Console.WriteLine("p = " + p.X + "," + p.Y);
+            Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
+        }
+
+        private void ShowAnchorPoint(bool show = true) {
+            if (show == true) {
+                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
+                lastAnchorPoint = anchorPoint;
+            }
+            else {
+                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White, false);
+            }
+            
         }
 
     }
