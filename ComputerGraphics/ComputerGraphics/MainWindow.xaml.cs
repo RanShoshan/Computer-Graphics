@@ -42,12 +42,7 @@ namespace ComputerGraphics {
         BOLD
     }
 
-
-
-    public class Bezier {
-        public Point cp1, cp2, cp3, cp4;
-    }
-
+    
     public partial class MainWindow : Window {
 
         public UserState state = UserState.NONE;
@@ -59,9 +54,7 @@ namespace ComputerGraphics {
         public const int STROKE_BOLD = 10;
         private Point lastAnchorPoint = new Point();
         private Point anchorPoint = new Point();
-        private const string TYPE_LINE_KEY = "Lines";
-        private const string TYPE_CIRCLE_KEY = "Circle";
-        private const string TYPE_BEZIER_KEY = "Bezier";
+        private FileParserUtil parser = new FileParserUtil();
 
         public void WriteToTrackingFile(string str, string shapeKey)
         {
@@ -81,9 +74,9 @@ namespace ComputerGraphics {
 
         public void CreatNewTxtFile()
         {
-            File.AppendAllText(tempFilePath, "Lines: \r\n");
-            File.AppendAllText(tempFilePath, "Circle: \r\n");
-            File.AppendAllText(tempFilePath, "Bezier: \r\n");
+            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + ": \r\n");
+            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + ": \r\n");
+            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + ": \r\n");
         }
 
         public MainWindow()
@@ -203,7 +196,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, p);
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), TYPE_LINE_KEY);
+                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), ShapeName.LINE.ToString());
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
@@ -327,6 +320,7 @@ namespace ComputerGraphics {
             var result = ofd.ShowDialog();
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
+                parser.ParserFile(currentWorkingFile);
                 //LoadFile(ofd.FileName);
             }
         }
