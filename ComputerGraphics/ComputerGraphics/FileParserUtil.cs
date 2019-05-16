@@ -19,7 +19,7 @@ namespace ComputerGraphics {
         public readonly List<Bezier> bezierList = new List<Bezier>();
         public readonly List<Circle> circleList = new List<Circle>();
         public readonly List<Line> lineList = new List<Line>();
-        private readonly char delim = ',';
+        public static readonly char delimiter = ',';
 
         public void ParseFile(string fileName) {
 
@@ -32,7 +32,7 @@ namespace ComputerGraphics {
                     shapeName = GetShapeName(lines[i]);
                     continue;
                 }
-                AddShapeToList(shapeName, lines[i].Split(delim));
+                AddShapeToList(shapeName, lines[i].Split(delimiter));
             }
         }
 
@@ -53,9 +53,9 @@ namespace ComputerGraphics {
         }
 
         private void AddBezierToList(string[] vals) {
-            Bezier b = new Bezier(
+            bezierList.Add(new Bezier(
                 vals[0], vals[1], vals[2], vals[3],
-                vals[4], vals[5], vals[6], vals[7]);
+                vals[4], vals[5], vals[6], vals[7]));
         }
 
         private void AddCircleToList(string[] vals) {
