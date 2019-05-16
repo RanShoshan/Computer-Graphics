@@ -16,20 +16,22 @@ namespace ComputerGraphics {
 
     class FileParserUtil {
         
-        private readonly List<Bezier> bezierList = new List<Bezier>();
-        private readonly List<Circle> circleList = new List<Circle>();
-        private readonly List<Line> lineList = new List<Line>();
-        private string currentFocusedShape;
-        private char delim = ',';
+        public readonly List<Bezier> bezierList = new List<Bezier>();
+        public readonly List<Circle> circleList = new List<Circle>();
+        public readonly List<Line> lineList = new List<Line>();
+        private readonly char delim = ',';
 
-        public void ParserFile(string fileName) {
+        public void ParseFile(string fileName) {
 
-            var shapeName = ShapeName.LINE;
+            var shapeName = ShapeName.NONE;
             string[] full_file = File.ReadAllLines(fileName);
             List<string> lines = new List<string>();
             lines.AddRange(full_file);
             for (int i = 0; i < lines.Count; i++) {
-                shapeName = GetShapeName(lines[i]);
+                if(GetShapeName(lines[i]) != ShapeName.NONE) {
+                    shapeName = GetShapeName(lines[i]);
+                    continue;
+                }
                 AddShapeToList(shapeName, lines[i].Split(delim));
             }
         }
@@ -60,7 +62,7 @@ namespace ComputerGraphics {
             circleList.Add(new Circle(vals[0], vals[1], vals[2], vals[3]));
         }
 
-        private void AddLineToList(string[] vals) { vals[1]));
+        private void AddLineToList(string[] vals) {
             lineList.Add(new Line(vals[0], vals[1], vals[2], vals[3]));
         }
 
@@ -77,6 +79,10 @@ namespace ComputerGraphics {
             return ShapeName.NONE;
         }
 
-
+        internal void ClearCache() {
+            lineList.Clear();
+            circleList.Clear();
+            bezierList.Clear();
+        }
     }
 }
