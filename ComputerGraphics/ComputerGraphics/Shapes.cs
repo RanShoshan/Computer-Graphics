@@ -10,8 +10,10 @@ namespace ComputerGraphics {
     }
 
     public class Bezier {
+        public static readonly string DEFAULT_SMOOTHING_RATE = "30";
         public Point cp1, cp2, cp3, cp4;
 
+        public Bezier() { }
         public Bezier(string x1, string y1, string x2, string y2,
             string x3, string y3, string x4, string y4) {
             cp1 = new Point(Double.Parse(x1), Double.Parse(y1));
@@ -22,12 +24,12 @@ namespace ComputerGraphics {
         }
     }
 
-    class Circle : Line {
+    public class Circle : Line {
         public Circle(string centerX, string centerY, string endX, string endY) 
             : base(centerX, centerY, endX, endY) {}
     }
 
-    class Line {
+    public class Line {
         public Point pt1;
         public Point pt2;
 
