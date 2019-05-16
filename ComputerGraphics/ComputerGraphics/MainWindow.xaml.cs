@@ -55,6 +55,9 @@ namespace ComputerGraphics {
         private Point lastAnchorPoint = new Point();
         private Point anchorPoint = new Point();
         private FileParserUtil parser = new FileParserUtil();
+        private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
+        private readonly char delim = FileParserUtil.delimiter;
+
 
         public void WriteToTrackingFile(string str, string shapeKey)
         {
@@ -74,9 +77,9 @@ namespace ComputerGraphics {
 
         public void CreatNewTxtFile()
         {
-            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + ": \r\n");
-            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + ": \r\n");
-            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + ": \r\n");
+            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
         public MainWindow()
@@ -96,6 +99,7 @@ namespace ComputerGraphics {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
+            parser.ClearCache();
             File.Delete(tempFilePath);
             CreatNewTxtFile();
             anchorPoint.X = anchorPoint.Y = 0;
@@ -117,6 +121,9 @@ namespace ComputerGraphics {
             ToggleOffAllButtons(btnPaintcan);
         }
 
+        public void DrawCircle(Circle obj) {
+            DrawCircle(obj.pt1, obj.pt2);
+        }
 
         public void DrawCircle(Point p1, Point p2)
         {
@@ -152,6 +159,11 @@ namespace ComputerGraphics {
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
+        public void DrawLine(Line line) {
+            if(line != null)
+                DrawLine(line.pt1, line.pt2);
+        }
+
         public void DrawLine(Point p1, Point p2)
         {
             int x0 = Convert.ToInt32(p1.X);
@@ -171,15 +183,9 @@ namespace ComputerGraphics {
             }
         }
 
-        public string PointToIntToString(Point p)
+        public string PointToString(Point p)
         {
-            int x = Convert.ToInt32(p.X);
-            int y = Convert.ToInt32(p.Y);
-
-            string strx = x.ToString();
-            string stry = y.ToString();
-            return strx + ',' + stry;
-
+            return p.X.ToString() + ',' + p.Y.ToString();
         }
 
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
@@ -196,7 +202,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, p);
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), ShapeName.LINE.ToString());
+                    WriteToTrackingFile(PointToString(lastPoint) + delim + PointToString(p), ShapeName.LINE.ToString());
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
@@ -206,6 +212,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_CIRCLE_2ST_CLICK:
                     DrawCircle(lastPoint, p);
+                    WriteToTrackingFile(PointToString(lastPoint) + delim + PointToString(p), ShapeName.CIRCLE.ToString());
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
 
@@ -228,6 +235,9 @@ namespace ComputerGraphics {
                     bezier.cp4 = p;
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
+                    WriteToTrackingFile(
+                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim + 
+                        PointToString(bezier.cp3) + delim + PointToString(bezier.cp4), ShapeName.BEZIER.ToString());
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
                 default:
@@ -235,7 +245,7 @@ namespace ComputerGraphics {
             }
             //UpdateAnchorPoint(p);
         }
-        
+
         public void DrawBezierCurve(Bezier b , string smoothingRate)
         {
             var lineStart = new Point(0, 0);
@@ -320,8 +330,48 @@ namespace ComputerGraphics {
             var result = ofd.ShowDialog();
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
-                parser.ParserFile(currentWorkingFile);
-                //LoadFile(ofd.FileName);
+                parser.ParseFile(currentWorkingFile);
+                DrawShapesFromFile(parser);
+            }
+        }
+
+        private void DrawShapesFromFile(FileParserUtil parser) {
+            DrawLines(parser.lineList);
+            DrawCircles(parser.circleList);
+            DrawBezierCurves(parser.bezierList);
+        }
+
+        private void DrawBezierCurves(List<Bezier> bezierList) {
+            foreach(var obj in bezierList) {
+                DrawBezierCurve(obj, Bezier.DEFAULT_SMOOTHING_RATE);
+                WriteToTrackingFile(
+                    PointToString(obj.cp1) + delim +
+                    PointToString(obj.cp2) + delim +
+                    PointToString(obj.cp3) + delim +
+                    PointToString(obj.cp4),
+                    ShapeName.BEZIER.ToString());
+            }
+        }
+
+        private void DrawCircles(List<Circle> circleList) {
+            foreach (var obj in circleList) {
+                DrawCircle(obj);
+                WriteToTrackingFile(
+                    PointToString(obj.pt1) +
+                    delim +
+                    PointToString(obj.pt2),
+                    ShapeName.CIRCLE.ToString());
+            }
+        }
+
+        private void DrawLines(List<Line> lineList) {
+            foreach (var obj in lineList) {
+                DrawLine(obj);
+                WriteToTrackingFile(
+                    PointToString(obj.pt1) +
+                    delim +
+                    PointToString(obj.pt2),
+                    ShapeName.LINE.ToString());
             }
         }
 
