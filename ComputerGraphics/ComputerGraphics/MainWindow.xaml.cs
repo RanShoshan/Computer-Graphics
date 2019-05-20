@@ -57,6 +57,7 @@ namespace ComputerGraphics {
         private FileParserUtil parser = new FileParserUtil();
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
+        private Button anchorPointBtn = new Button();
 
 
         public void WriteToTrackingFile(string str, string shapeKey)
@@ -87,6 +88,25 @@ namespace ComputerGraphics {
             InitializeComponent();
             tbBezierNumOfLines.IsEnabled = false;
             Clear();
+            InitAnchorPointBtn(new Point(0,0));
+
+
+            this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
+            this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
+        }
+
+        private void InitAnchorPointBtn(Point p) {
+            anchorPointBtn.Content = "";
+            anchorPointBtn.Width = 10;
+            anchorPointBtn.Height = 10;
+            anchorPointBtn.Background = Brushes.DarkOrange;
+            //anchorPointBtn.BorderBrush = Brushes.White;
+            Canvas.SetLeft(anchorPointBtn, p.X);
+            Canvas.SetTop(anchorPointBtn, p.Y);
+            anchorPointBtn.Visibility = System.Windows.Visibility.Hidden;
+            if (!myCanvas.Children.Contains(anchorPointBtn)) {
+                myCanvas.Children.Add(anchorPointBtn);
+            }
         }
 
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
@@ -99,6 +119,11 @@ namespace ComputerGraphics {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
+            if (myCanvas.Children.Contains(anchorPointBtn)) {
+                myCanvas.Children.Remove(anchorPointBtn);
+            }
+            myCanvas.Children.Add(anchorPointBtn);
+
             parser.ClearCache();
             File.Delete(tempFilePath);
             CreatNewTxtFile();
@@ -402,17 +427,21 @@ namespace ComputerGraphics {
         private void UpdateAnchorPoint(Point p) {
             anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
+            //var currX = Canvas.GetLeft(anchorPointBtn);
+            //var currY = Canvas.GetTop(anchorPointBtn);
+            Canvas.SetLeft(anchorPointBtn, anchorPoint.X);
+            Canvas.SetTop(anchorPointBtn, anchorPoint.Y);
             Console.WriteLine("p = " + p.X + "," + p.Y);
             Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
         }
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
-                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
-                lastAnchorPoint = anchorPoint;
+                //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
+                anchorPointBtn.Visibility = Visibility.Visible;
             }
             else {
-                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White, false);
+                anchorPointBtn.Visibility = Visibility.Hidden;
             }
             
         }
