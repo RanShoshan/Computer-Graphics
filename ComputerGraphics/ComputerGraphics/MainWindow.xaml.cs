@@ -42,7 +42,11 @@ namespace ComputerGraphics {
         BOLD
     }
 
-    
+    public class AnchorPointHelper {
+        public Point downPos = new Point(0.0, 0.0);
+        public Point upPos = new Point(0.0, 0.0);
+    }
+
     public partial class MainWindow : Window {
 
         public UserState state = UserState.NONE;
@@ -52,13 +56,12 @@ namespace ComputerGraphics {
         public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
-        private Point lastAnchorPoint = new Point();
         private Point anchorPoint = new Point();
         private FileParserUtil parser = new FileParserUtil();
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
-        private Button anchorPointBtn = new Button();
-
+        //private Button anchorPointBtn = new Button();
+        private AnchorPointHelper apHelper = new AnchorPointHelper();
 
         public void WriteToTrackingFile(string str, string shapeKey)
         {
@@ -86,27 +89,80 @@ namespace ComputerGraphics {
         public MainWindow()
         {
             InitializeComponent();
+
             tbBezierNumOfLines.IsEnabled = false;
             Clear();
-            InitAnchorPointBtn(new Point(0,0));
+            InitAnchorPointBtn();
 
 
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
         }
 
-        private void InitAnchorPointBtn(Point p) {
-            anchorPointBtn.Content = "";
-            anchorPointBtn.Width = 10;
-            anchorPointBtn.Height = 10;
-            anchorPointBtn.Background = Brushes.DarkOrange;
+        private void InitAnchorPointBtn() {
             //anchorPointBtn.BorderBrush = Brushes.White;
-            Canvas.SetLeft(anchorPointBtn, p.X);
-            Canvas.SetTop(anchorPointBtn, p.Y);
-            anchorPointBtn.Visibility = System.Windows.Visibility.Hidden;
+            Canvas.SetLeft(anchorPointBtn, 0);
+            Canvas.SetTop(anchorPointBtn, 0);
+
+        
             if (!myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Add(anchorPointBtn);
             }
+        }
+
+        private void OnAnchorPointBtnDrag(object s, MouseEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnDrag: " + e.GetPosition(myCanvas));
+        }
+
+        private void OnAnchorPointBtnMouseUp(object s, MouseButtonEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnMouseUp: " + e.GetPosition(myCanvas));
+            apHelper.upPos = e.GetPosition(myCanvas);
+            var dx = apHelper.upPos.X - apHelper.downPos.X;
+            var dy = apHelper.upPos.Y - apHelper.downPos.Y;
+
+            var currState = state;
+            Clear(false);
+            parser.ParseFile(tempFilePath);
+
+            switch (currState) {
+                case UserState.SCALE:
+                    ScaleShapes(dx, dy);
+                    break;
+                case UserState.STRECH:
+                    break;
+                case UserState.ROTATE:
+                    break;
+            }
+
+            DrawShapesFromFile(parser);
+        }
+
+        private void OnAnchorPointBtnMouseDown(object s, MouseButtonEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnMouseDown: " + e.GetPosition(myCanvas));
+            apHelper.downPos = e.GetPosition(myCanvas);
+        }
+
+        private void ScaleShapes(double dx, double dy) {
+            int SCALE_DIRECTION = (dy < 0) ? 1 : 0;
+            foreach (Line line in parser.lineList) {
+                var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(line.pt2.Y - line.pt1.Y);
+                LineCalibrated lc = new LineCalibrated(line);
+                MultValsBy(ref lc.calibrated, scaleValue);
+                lc.FixCalibrationOffset();
+                line.pt1.X = lc.calibrated.pt1.X;
+                line.pt1.Y = lc.calibrated.pt1.Y;
+                line.pt2.X = lc.calibrated.pt2.X;
+                line.pt2.Y = lc.calibrated.pt2.Y;
+            }
+            //var linearDistance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
+
+        }
+
+        private void MultValsBy(ref Line line, double scaleValue) {
+            line.pt1.X *= scaleValue;
+            line.pt1.Y *= scaleValue;
+            line.pt2.X *= scaleValue;
+            line.pt2.Y *= scaleValue;
         }
 
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
@@ -114,7 +170,7 @@ namespace ComputerGraphics {
             Clear();
         }
 
-        public void Clear()
+        public void Clear(bool clearCache = true)
         {
             state = UserState.NONE;
             ToggleOffAllButtons();
@@ -124,9 +180,13 @@ namespace ComputerGraphics {
             }
             myCanvas.Children.Add(anchorPointBtn);
 
-            parser.ClearCache();
-            File.Delete(tempFilePath);
-            CreatNewTxtFile();
+            if (clearCache) {
+                parser.ClearCache();
+                File.Delete(tempFilePath);
+                CreatNewTxtFile();
+            }
+
+
             anchorPoint.X = anchorPoint.Y = 0;
         }
 
