@@ -62,6 +62,9 @@ namespace ComputerGraphics {
         private readonly char delim = FileParserUtil.delimiter;
         //private Button anchorPointBtn = new Button();
         private AnchorPointHelper apHelper = new AnchorPointHelper();
+        private int SCALE_UP = 1;
+        private int SCALE_DOWN = 0;
+
 
         public void WriteToTrackingFile(string str, string shapeKey)
         {
@@ -143,26 +146,48 @@ namespace ComputerGraphics {
         }
 
         private void ScaleShapes(double dx, double dy) {
-            int SCALE_DIRECTION = (dy < 0) ? 1 : 0;
+            int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
+
             foreach (Line line in parser.lineList) {
-                var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(line.pt2.Y - line.pt1.Y);
+                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, line.pt2.Y, line.pt1.Y);
+
                 LineCalibrated lc = new LineCalibrated(line);
-                MultValsBy(ref lc.calibrated, scaleValue);
+                MultPointsBy(ref lc.calibrated.pt1, ref lc.calibrated.pt2, scaleValue);
                 lc.FixCalibrationOffset();
                 line.pt1.X = lc.calibrated.pt1.X;
                 line.pt1.Y = lc.calibrated.pt1.Y;
                 line.pt2.X = lc.calibrated.pt2.X;
                 line.pt2.Y = lc.calibrated.pt2.Y;
             }
+            foreach (Circle circle in parser.circleList) {
+                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, circle.pt2.Y, circle.pt1.Y);
+                CircleCalibrated cc = new CircleCalibrated(circle);
+                MultPointsBy(ref cc.calibrated.pt1, ref cc.calibrated.pt2, scaleValue);
+                cc.FixCalibrationOffset();
+                circle.pt1.X = cc.calibrated.pt1.X;
+                circle.pt1.Y = cc.calibrated.pt1.Y;
+                circle.pt2.X = cc.calibrated.pt2.X;
+                circle.pt2.Y = cc.calibrated.pt2.Y;
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+            }
             //var linearDistance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
 
         }
 
-        private void MultValsBy(ref Line line, double scaleValue) {
-            line.pt1.X *= scaleValue;
-            line.pt1.Y *= scaleValue;
-            line.pt2.X *= scaleValue;
-            line.pt2.Y *= scaleValue;
+        private double GetScaleValue(int SCALE_DIRECTION, double dy, double y2, double y1) {
+            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2-y1);
+            if (SCALE_DIRECTION == SCALE_DOWN) {
+                scaleValue = 1 - scaleValue;
+            }
+            return scaleValue;
+        }
+
+        private void MultPointsBy(ref Point p1, ref Point p2, double scaleValue) {
+            p1.X *= scaleValue;
+            p1.Y *= scaleValue;
+            p2.X *= scaleValue;
+            p2.Y *= scaleValue;
         }
 
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)

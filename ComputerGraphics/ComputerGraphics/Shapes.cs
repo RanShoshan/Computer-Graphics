@@ -27,6 +27,9 @@ namespace ComputerGraphics {
     public class Circle : Line {
         public Circle(string centerX, string centerY, string endX, string endY) 
             : base(centerX, centerY, endX, endY) {}
+
+        public Circle(Point p1, Point p2)
+            : base(p1, p2) { }
     }
 
     public class Line {

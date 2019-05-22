@@ -47,8 +47,8 @@ namespace ComputerGraphics {
             else {
                 calibrated.pt1.Y += uncalibrated.pt2.Y;
                 calibrated.pt1.X += uncalibrated.pt2.X;
-                calibrated.pt2.Y += uncalibrated.pt2.Y;
-                calibrated.pt2.X += uncalibrated.pt2.X;
+                calibrated.pt2.Y += uncalibrated.pt1.Y;
+                calibrated.pt2.X += uncalibrated.pt1.X;
             }
         }
     }
