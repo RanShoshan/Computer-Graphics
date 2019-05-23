@@ -1,15 +1,10 @@
-﻿<Window x:Class="ComputerGraphics.MainWindow"
+﻿<!-- * ran shoshan 308281575 & shay rubach 305687352-->
+<Window x:Class="ComputerGraphics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Best Painter Ever" 
 		WindowState="Maximized">
 
-    <!--This is where we bind out events and other stuff to the buttons-->
-    <!--<Window.CommandBindings>
-		<CommandBinding Command="New" CanExecute="CommonCommandBinding_CanExecute" />
-		<CommandBinding Command="Open" CanExecute="CommonCommandBinding_CanExecute" />
-		<CommandBinding Command="Save" CanExecute="CommonCommandBinding_CanExecute" />
-	</Window.CommandBindings>-->
     <DockPanel>
         <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite">
@@ -70,7 +65,15 @@
         <TextBox AcceptsReturn="True" />
 
         <Canvas Background="White" x:Name="myCanvas" MouseDown="OnCanvasMouseDown">
-
+            <Button Content="" 
+                        x:Name="anchorPointBtn"
+                        Width="10"
+                        Height="10"
+                        Background="DarkOrange"
+                        PreviewMouseDown="OnAnchorPointBtnMouseDown" 
+                        PreviewMouseUp="OnAnchorPointBtnMouseUp" 
+                        PreviewMouseMove="OnAnchorPointBtnDrag"
+                        Visibility="Hidden"/>
         </Canvas>
     </DockPanel>
 </Window>

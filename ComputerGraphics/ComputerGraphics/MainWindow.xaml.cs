@@ -42,10 +42,9 @@ namespace ComputerGraphics {
         BOLD
     }
 
-
-
-    public class Bezier {
-        public Point cp1, cp2, cp3, cp4;
+    public class AnchorPointHelper {
+        public Point downPos = new Point(0.0, 0.0);
+        public Point upPos = new Point(0.0, 0.0);
     }
 
     public partial class MainWindow : Window {
@@ -57,11 +56,15 @@ namespace ComputerGraphics {
         public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
-        private Point lastAnchorPoint = new Point();
         private Point anchorPoint = new Point();
-        private const string TYPE_LINE_KEY = "Lines";
-        private const string TYPE_CIRCLE_KEY = "Circle";
-        private const string TYPE_BEZIER_KEY = "Bezier";
+        private FileParserUtil parser = new FileParserUtil();
+        private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
+        private readonly char delim = FileParserUtil.delimiter;
+        //private Button anchorPointBtn = new Button();
+        private AnchorPointHelper apHelper = new AnchorPointHelper();
+        private int SCALE_UP = 1;
+        private int SCALE_DOWN = 0;
+
 
         public void WriteToTrackingFile(string str, string shapeKey)
         {
@@ -81,16 +84,110 @@ namespace ComputerGraphics {
 
         public void CreatNewTxtFile()
         {
-            File.AppendAllText(tempFilePath, "Lines: \r\n");
-            File.AppendAllText(tempFilePath, "Circle: \r\n");
-            File.AppendAllText(tempFilePath, "Bezier: \r\n");
+            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
         public MainWindow()
         {
             InitializeComponent();
+
             tbBezierNumOfLines.IsEnabled = false;
             Clear();
+            InitAnchorPointBtn();
+
+
+            this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
+            this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
+        }
+
+        private void InitAnchorPointBtn() {
+            //anchorPointBtn.BorderBrush = Brushes.White;
+            Canvas.SetLeft(anchorPointBtn, 0);
+            Canvas.SetTop(anchorPointBtn, 0);
+
+        
+            if (!myCanvas.Children.Contains(anchorPointBtn)) {
+                myCanvas.Children.Add(anchorPointBtn);
+            }
+        }
+
+        private void OnAnchorPointBtnDrag(object s, MouseEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnDrag: " + e.GetPosition(myCanvas));
+        }
+
+        private void OnAnchorPointBtnMouseUp(object s, MouseButtonEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnMouseUp: " + e.GetPosition(myCanvas));
+            apHelper.upPos = e.GetPosition(myCanvas);
+            var dx = apHelper.upPos.X - apHelper.downPos.X;
+            var dy = apHelper.upPos.Y - apHelper.downPos.Y;
+
+            var currState = state;
+            Clear(false);
+            parser.ParseFile(tempFilePath);
+
+            switch (currState) {
+                case UserState.SCALE:
+                    ScaleShapes(dx, dy);
+                    break;
+                case UserState.STRECH:
+                    break;
+                case UserState.ROTATE:
+                    break;
+            }
+
+            DrawShapesFromFile(parser);
+        }
+
+        private void OnAnchorPointBtnMouseDown(object s, MouseButtonEventArgs e) {
+            Console.WriteLine("OnAnchorPointBtnMouseDown: " + e.GetPosition(myCanvas));
+            apHelper.downPos = e.GetPosition(myCanvas);
+        }
+
+        private void ScaleShapes(double dx, double dy) {
+            int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
+
+            foreach (Line line in parser.lineList) {
+                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, line.pt2.Y, line.pt1.Y);
+
+                LineCalibrated lc = new LineCalibrated(line);
+                MultPointsBy(ref lc.calibrated.pt1, ref lc.calibrated.pt2, scaleValue);
+                lc.FixCalibrationOffset();
+                line.pt1.X = lc.calibrated.pt1.X;
+                line.pt1.Y = lc.calibrated.pt1.Y;
+                line.pt2.X = lc.calibrated.pt2.X;
+                line.pt2.Y = lc.calibrated.pt2.Y;
+            }
+            foreach (Circle circle in parser.circleList) {
+                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, circle.pt2.Y, circle.pt1.Y);
+                CircleCalibrated cc = new CircleCalibrated(circle);
+                MultPointsBy(ref cc.calibrated.pt1, ref cc.calibrated.pt2, scaleValue);
+                cc.FixCalibrationOffset();
+                circle.pt1.X = cc.calibrated.pt1.X;
+                circle.pt1.Y = cc.calibrated.pt1.Y;
+                circle.pt2.X = cc.calibrated.pt2.X;
+                circle.pt2.Y = cc.calibrated.pt2.Y;
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+            }
+            //var linearDistance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
+
+        }
+
+        private double GetScaleValue(int SCALE_DIRECTION, double dy, double y2, double y1) {
+            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2-y1);
+            if (SCALE_DIRECTION == SCALE_DOWN) {
+                scaleValue = 1 - scaleValue;
+            }
+            return scaleValue;
+        }
+
+        private void MultPointsBy(ref Point p1, ref Point p2, double scaleValue) {
+            p1.X *= scaleValue;
+            p1.Y *= scaleValue;
+            p2.X *= scaleValue;
+            p2.Y *= scaleValue;
         }
 
         public void OnBtnClearClicked(object sender, RoutedEventArgs e)
@@ -98,13 +195,23 @@ namespace ComputerGraphics {
             Clear();
         }
 
-        public void Clear()
+        public void Clear(bool clearCache = true)
         {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
-            File.Delete(tempFilePath);
-            CreatNewTxtFile();
+            if (myCanvas.Children.Contains(anchorPointBtn)) {
+                myCanvas.Children.Remove(anchorPointBtn);
+            }
+            myCanvas.Children.Add(anchorPointBtn);
+
+            if (clearCache) {
+                parser.ClearCache();
+                File.Delete(tempFilePath);
+                CreatNewTxtFile();
+            }
+
+
             anchorPoint.X = anchorPoint.Y = 0;
         }
 
@@ -124,6 +231,9 @@ namespace ComputerGraphics {
             ToggleOffAllButtons(btnPaintcan);
         }
 
+        public void DrawCircle(Circle obj) {
+            DrawCircle(obj.pt1, obj.pt2);
+        }
 
         public void DrawCircle(Point p1, Point p2)
         {
@@ -159,6 +269,11 @@ namespace ComputerGraphics {
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
+        public void DrawLine(Line line) {
+            if(line != null)
+                DrawLine(line.pt1, line.pt2);
+        }
+
         public void DrawLine(Point p1, Point p2)
         {
             int x0 = Convert.ToInt32(p1.X);
@@ -178,15 +293,9 @@ namespace ComputerGraphics {
             }
         }
 
-        public string PointToIntToString(Point p)
+        public string PointToString(Point p)
         {
-            int x = Convert.ToInt32(p.X);
-            int y = Convert.ToInt32(p.Y);
-
-            string strx = x.ToString();
-            string stry = y.ToString();
-            return strx + ',' + stry;
-
+            return p.X.ToString() + ',' + p.Y.ToString();
         }
 
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
@@ -203,7 +312,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_LINE_2ST_CLICK:
                     DrawLine(lastPoint, p);
-                    WriteToTrackingFile(PointToIntToString(lastPoint) + "," + PointToIntToString(p), TYPE_LINE_KEY);
+                    WriteToTrackingFile(PointToString(lastPoint) + delim + PointToString(p), ShapeName.LINE.ToString());
                     state = UserState.BTN_LINE_1ST_CLICK;
                     break;
 
@@ -213,6 +322,7 @@ namespace ComputerGraphics {
                     break;
                 case UserState.BTN_CIRCLE_2ST_CLICK:
                     DrawCircle(lastPoint, p);
+                    WriteToTrackingFile(PointToString(lastPoint) + delim + PointToString(p), ShapeName.CIRCLE.ToString());
                     state = UserState.BTN_CIRCLE_1ST_CLICK;
                     break;
 
@@ -235,6 +345,9 @@ namespace ComputerGraphics {
                     bezier.cp4 = p;
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
+                    WriteToTrackingFile(
+                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim + 
+                        PointToString(bezier.cp3) + delim + PointToString(bezier.cp4), ShapeName.BEZIER.ToString());
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
                 default:
@@ -242,7 +355,7 @@ namespace ComputerGraphics {
             }
             //UpdateAnchorPoint(p);
         }
-        
+
         public void DrawBezierCurve(Bezier b , string smoothingRate)
         {
             var lineStart = new Point(0, 0);
@@ -327,7 +440,48 @@ namespace ComputerGraphics {
             var result = ofd.ShowDialog();
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
-                //LoadFile(ofd.FileName);
+                parser.ParseFile(currentWorkingFile);
+                DrawShapesFromFile(parser);
+            }
+        }
+
+        private void DrawShapesFromFile(FileParserUtil parser) {
+            DrawLines(parser.lineList);
+            DrawCircles(parser.circleList);
+            DrawBezierCurves(parser.bezierList);
+        }
+
+        private void DrawBezierCurves(List<Bezier> bezierList) {
+            foreach(var obj in bezierList) {
+                DrawBezierCurve(obj, Bezier.DEFAULT_SMOOTHING_RATE);
+                WriteToTrackingFile(
+                    PointToString(obj.cp1) + delim +
+                    PointToString(obj.cp2) + delim +
+                    PointToString(obj.cp3) + delim +
+                    PointToString(obj.cp4),
+                    ShapeName.BEZIER.ToString());
+            }
+        }
+
+        private void DrawCircles(List<Circle> circleList) {
+            foreach (var obj in circleList) {
+                DrawCircle(obj);
+                WriteToTrackingFile(
+                    PointToString(obj.pt1) +
+                    delim +
+                    PointToString(obj.pt2),
+                    ShapeName.CIRCLE.ToString());
+            }
+        }
+
+        private void DrawLines(List<Line> lineList) {
+            foreach (var obj in lineList) {
+                DrawLine(obj);
+                WriteToTrackingFile(
+                    PointToString(obj.pt1) +
+                    delim +
+                    PointToString(obj.pt2),
+                    ShapeName.LINE.ToString());
             }
         }
 
@@ -358,17 +512,21 @@ namespace ComputerGraphics {
         private void UpdateAnchorPoint(Point p) {
             anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
+            //var currX = Canvas.GetLeft(anchorPointBtn);
+            //var currY = Canvas.GetTop(anchorPointBtn);
+            Canvas.SetLeft(anchorPointBtn, anchorPoint.X);
+            Canvas.SetTop(anchorPointBtn, anchorPoint.Y);
             Console.WriteLine("p = " + p.X + "," + p.Y);
             Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
         }
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
-                SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
-                lastAnchorPoint = anchorPoint;
+                //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
+                anchorPointBtn.Visibility = Visibility.Visible;
             }
             else {
-                SetPixel(Convert.ToInt32(lastAnchorPoint.X), Convert.ToInt32(lastAnchorPoint.Y), PixelStyle.BOLD, Brushes.White, false);
+                anchorPointBtn.Visibility = Visibility.Hidden;
             }
             
         }
