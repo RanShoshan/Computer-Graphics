@@ -118,6 +118,7 @@ namespace ComputerGraphics {
             apHelper.upPos = e.GetPosition(myCanvas);
             var dx = apHelper.upPos.X - apHelper.downPos.X;
             var dy = apHelper.upPos.Y - apHelper.downPos.Y;
+            var angle = Double.Parse(tbRotateDegrees.Text) % 360;
 
             var currState = state;
             Clear(false, false);
@@ -130,7 +131,7 @@ namespace ComputerGraphics {
                 case UserState.STRECH:
                     break;
                 case UserState.ROTATE:
-                    RotateShapes();
+                    RotateShapes(angle);
                     break;
                 case UserState.MOVE:
                     MoveShapes(dx, dy);
@@ -138,6 +139,18 @@ namespace ComputerGraphics {
             }
 
             DrawShapesFromFile(parser);
+        }
+
+        private double CalculateAngleToRotate() {
+            var deltaX = apHelper.upPos.X - (myCanvas.ActualWidth/2);
+            var deltaY = (myCanvas.ActualHeight/2) - apHelper.upPos.X;
+            var thetaRadians = Math.Atan2(deltaY, deltaX);
+
+            if (thetaRadians < 0)
+                thetaRadians = Math.Abs(thetaRadians);
+            else
+                thetaRadians  = thetaRadians * (180.0 / Math.PI);
+            return thetaRadians;
         }
 
         private void MoveShapes(double dx, double dy) {
@@ -326,21 +339,21 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier, tbBezierNumOfLines.Text);
                     WriteToTrackingFile(
                         PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim +
@@ -515,8 +528,6 @@ namespace ComputerGraphics {
             //var currY = Canvas.GetTop(anchorPointBtn);
             Canvas.SetLeft(anchorPointBtn, anchorPoint.X);
             Canvas.SetTop(anchorPointBtn, anchorPoint.Y);
-            Console.WriteLine("p = " + p.X + "," + p.Y);
-            Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
         }
 
         private void ShowAnchorPoint(bool show = true) {
@@ -537,10 +548,8 @@ namespace ComputerGraphics {
         }
 
         //rotate shapes around center point
-        private void RotateShapes() {
+        private void RotateShapes(double angle) {
 
-
-            var angle = 45.0;
             foreach (MyLine line in parser.lineList) {
                 /* We are using default center point (center of screen). But we could also calculate 
                  * the line's as middle point:
