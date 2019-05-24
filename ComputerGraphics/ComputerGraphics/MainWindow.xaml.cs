@@ -119,7 +119,7 @@ namespace ComputerGraphics {
             var dy = apHelper.upPos.Y - apHelper.downPos.Y;
 
             var currState = state;
-            Clear(false);
+            Clear(false, false);
             parser.ParseFile(tempFilePath);
 
             switch (currState) {
@@ -204,9 +204,11 @@ namespace ComputerGraphics {
             Clear();
         }
 
-        public void Clear(bool clearCache = true) {
-            state = UserState.NONE;
-            ToggleOffAllButtons();
+        public void Clear(bool clearCache = true, bool resetState = true) {
+            if (resetState) {
+                state = UserState.NONE;
+            }
+            ToggleOffAllButtons(null, resetState);
             myCanvas.Children.Clear();
             if (myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Remove(anchorPointBtn);
@@ -406,7 +408,7 @@ namespace ComputerGraphics {
 
         }
 
-        public void ToggleOffAllButtons(ToggleButton activeBtn = null) {
+        public void ToggleOffAllButtons(ToggleButton activeBtn = null, bool hideAnchor = true) {
 
             foreach (var item in mainToolbar.Items) {
                 if (item is ToggleButton) {
@@ -418,7 +420,9 @@ namespace ComputerGraphics {
                 activeBtn.IsChecked = true;
             }
 
-            ShowAnchorPoint(false);
+            if (hideAnchor) {
+                ShowAnchorPoint(false);
+            }
         }
 
         public void OnBtnSaveClicked(object sender, RoutedEventArgs e) {
