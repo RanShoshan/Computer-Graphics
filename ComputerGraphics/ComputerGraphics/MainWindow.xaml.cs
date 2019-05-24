@@ -441,6 +441,9 @@ namespace ComputerGraphics {
         }
 
         private void DrawShapesFromFile(FileParserUtil parser) {
+            File.Delete(tempFilePath);
+            CreatNewTxtFile();
+
             DrawLines(parser.lineList);
             DrawCircles(parser.circleList);
             DrawBezierCurves(parser.bezierList);
