@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace ComputerGraphics {
     /// <summary>
@@ -139,7 +140,7 @@ namespace ComputerGraphics {
         }
 
         private void MoveShapes(double dx, double dy) {
-            foreach (Line line in parser.lineList) {
+            foreach (MyLine line in parser.lineList) {
                 line.Move(dx, dy);
             }
             foreach (Circle circle in parser.circleList) {
@@ -158,7 +159,7 @@ namespace ComputerGraphics {
         private void ScaleShapes(double dx, double dy) {
             int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
 
-            foreach (Line line in parser.lineList) {
+            foreach (MyLine line in parser.lineList) {
                 var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, line.pt2.Y, line.pt1.Y);
 
                 LineCalibrated lc = new LineCalibrated(line);
@@ -223,6 +224,7 @@ namespace ComputerGraphics {
 
 
             anchorPoint.X = anchorPoint.Y = 0;
+            GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e) {
@@ -243,22 +245,19 @@ namespace ComputerGraphics {
         }
 
         public void DrawCircle(Point p1, Point p2) {
-            int xCenter = Convert.ToInt32(p2.X);
-            int yCenter = Convert.ToInt32(p2.Y);
-            int xr = Convert.ToInt32(p1.X);
-            int yr = Convert.ToInt32(p1.Y);
+            var radius = Math.Abs(p1.X - p2.X);
+            Ellipse circle = new Ellipse() {
+                Width = radius*2,
+                Height = radius*2,
+                Stroke = Brushes.Blue,
+                StrokeThickness = 1
+            };
 
-            var a = (xCenter - xr);
-            var b = (yCenter - yr);
-            var r = Math.Sqrt(a * a + b * b);
+            myCanvas.Children.Add(circle);
 
-            for (double i = 0.0; i < 360.0; i += 0.1) {
-                double angle = i * System.Math.PI / 180;
-                int x = (int)(xr + r * System.Math.Cos(angle));
-                int y = (int)(yr + r * System.Math.Sin(angle));
-                SetPixel(x, y);
-            }
-
+            UpdateAnchorPoint(new Point(p1.X + radius, p1.Y - radius));
+            circle.SetValue(Canvas.LeftProperty, (double)p1.X- radius);
+            circle.SetValue(Canvas.TopProperty, (double)p1.Y - radius);
         }
 
         public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
@@ -274,26 +273,23 @@ namespace ComputerGraphics {
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
-        public void DrawLine(Line line) {
+        public void DrawLine(MyLine line) {
             if (line != null)
                 DrawLine(line.pt1, line.pt2);
         }
 
         public void DrawLine(Point p1, Point p2) {
-            int x0 = Convert.ToInt32(p1.X);
-            int y0 = Convert.ToInt32(p1.Y);
-            int x1 = Convert.ToInt32(p2.X);
-            int y1 = Convert.ToInt32(p2.Y);
-            bool steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
-            if (steep) { Swap<int>(ref x0, ref y0); Swap<int>(ref x1, ref y1); }
-            if (x0 > x1) { Swap<int>(ref x0, ref x1); Swap<int>(ref y0, ref y1); }
-            int dX = (x1 - x0), dY = Math.Abs(y1 - y0), err = (dX / 2), ystep = (y0 < y1 ? 1 : -1), y = y0;
-
-            for (int x = x0; x <= x1; ++x) {
-                if (!(steep ? SetPixel(y, x) : SetPixel(x, y))) return;
-                err = err - dY;
-                if (err < 0) { y += ystep; err += dX; }
-            }
+            var line = new Line {
+                Stroke = Brushes.Blue,
+                X1 = p1.X,
+                X2 = p2.X,
+                Y1 = p1.Y,
+                Y2 = p2.Y,
+                StrokeThickness = 1
+            };
+            myCanvas.Children.Add(line);
+            UpdateAnchorPoint(p1);
+            UpdateAnchorPoint(p2);
         }
 
         public string PointToString(Point p) {
@@ -476,7 +472,7 @@ namespace ComputerGraphics {
             }
         }
 
-        private void DrawLines(List<Line> lineList) {
+        private void DrawLines(List<MyLine> lineList) {
             foreach (var obj in lineList) {
                 DrawLine(obj);
                 WriteToTrackingFile(

@@ -36,7 +36,7 @@ namespace ComputerGraphics {
         }
     }
 
-    public class Circle : Line {
+    public class Circle : MyLine {
         public Circle(string centerX, string centerY, string endX, string endY) 
             : base(centerX, centerY, endX, endY) {}
 
@@ -44,16 +44,19 @@ namespace ComputerGraphics {
             : base(p1, p2) { }
     }
 
-    public class Line {
+    public class MyLine {
         public Point pt1;
         public Point pt2;
 
-        public Line(Point p1, Point p2) {
+        public MyLine() {
+        }
+
+        public MyLine(Point p1, Point p2) {
             pt1 = p1;
             pt2 = p2;
         }
 
-        public Line(string x1, string y1, string x2, string y2) {
+        public MyLine(string x1, string y1, string x2, string y2) {
             pt1 = new Point(Double.Parse(x1), Double.Parse(y1));
             pt2 = new Point(Double.Parse(x2), Double.Parse(y2));
         }
