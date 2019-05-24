@@ -67,7 +67,14 @@ namespace ComputerGraphics {
             pt2.X += dx;
             pt2.Y += dy;
         }
-    }
 
+        internal void Rotate() {
+            //var lineCenterPointX = pt1.X - pt2.X;
+            //var lineCenterPointY = pt1.Y - pt2.Y;
+            //Point lineCenterPoint = new Point(lineCenterPointX, lineCenterPointY);
+
+            //RotatePoint(pt1, lineCenterPoint, 20);
+        }
+    }
 
 }

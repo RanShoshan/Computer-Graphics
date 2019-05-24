@@ -130,6 +130,7 @@ namespace ComputerGraphics {
                 case UserState.STRECH:
                     break;
                 case UserState.ROTATE:
+                    RotateShapes();
                     break;
                 case UserState.MOVE:
                     MoveShapes(dx, dy);
@@ -245,7 +246,7 @@ namespace ComputerGraphics {
         }
 
         public void DrawCircle(Point p1, Point p2) {
-            var radius = Math.Abs(p1.X - p2.X);
+            var radius = Math.Max(Math.Abs(p1.X - p2.X), Math.Abs(p1.Y - p2.Y));
             Ellipse circle = new Ellipse() {
                 Width = radius*2,
                 Height = radius*2,
@@ -535,5 +536,59 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
+        //rotate shapes around center point
+        private void RotateShapes() {
+
+
+            var angle = 45.0;
+            foreach (MyLine line in parser.lineList) {
+                /* We are using default center point (center of screen). But we could also calculate 
+                 * the line's as middle point:
+                 * lineCenterPoint.X/Y = (line.pt1.X/Y + line.pt2.X/Y) / 2;
+                 */
+
+                //rotate points around center screen:
+                line.pt1 = RotatePoint(line.pt1, angle);
+                line.pt2 = RotatePoint(line.pt2, angle);
+
+            }
+            foreach (Circle circle in parser.circleList) {
+                //rotate points around center screen:
+                circle.pt1 = RotatePoint(circle.pt1, angle);
+                circle.pt2 = RotatePoint(circle.pt2, angle);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                /* We are using default center point (center of screen). But we could also calculate 
+                 * middle point of the bezier curve as as:
+                 * lineCenterPoint.X/Y = (bezier.cp1.X/Y + bezier.cp2.X/Y + bezier.cp3.X/Y + bezier.cp4.X/Y) / 4;
+                 */
+                
+                //rotate points around center screen:
+                bezier.cp1 = RotatePoint(bezier.cp1, angle);
+                bezier.cp2 = RotatePoint(bezier.cp2, angle);
+                bezier.cp3 = RotatePoint(bezier.cp3, angle);
+                bezier.cp4 = RotatePoint(bezier.cp4, angle);
+            }
+        }
+
+        internal Point RotatePoint(Point pointToRotate, double angleInDegrees) {
+            Point centerPoint = new Point {
+                X = myCanvas.ActualWidth / 2,
+                Y = myCanvas.ActualHeight / 2
+            };
+            return RotatePoint(pointToRotate, centerPoint, angleInDegrees);
+        }
+
+        internal Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees) {
+            double angleInRadians = angleInDegrees * (Math.PI / 180);
+            double cosTheta = Math.Cos(angleInRadians);
+            double sinTheta = Math.Sin(angleInRadians);
+            return new Point {
+                X = (cosTheta * (pointToRotate.X - centerPoint.X) -
+                    sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
+                Y = (sinTheta * (pointToRotate.X - centerPoint.X) +
+                    cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
+            };
+        }
     }
 }
