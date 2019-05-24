@@ -22,6 +22,18 @@ namespace ComputerGraphics {
             cp4 = new Point(Double.Parse(x4), Double.Parse(y4));
 
         }
+
+        internal void Move(double dx, double dy) {
+            cp1.X += dx;
+            cp2.X += dx;
+            cp3.X += dx;
+            cp4.X += dx;
+
+            cp1.Y += dy;
+            cp2.Y += dy;
+            cp3.Y += dy;
+            cp4.Y += dy;
+        }
     }
 
     public class Circle : Line {
@@ -46,7 +58,12 @@ namespace ComputerGraphics {
             pt2 = new Point(Double.Parse(x2), Double.Parse(y2));
         }
 
-
+        internal void Move(double dx, double dy) {
+            pt1.X += dx;
+            pt1.Y += dy;
+            pt2.X += dx;
+            pt2.Y += dy;
+        }
     }
 
 

@@ -18,26 +18,25 @@ namespace ComputerGraphics {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-   
 
-    public enum UserState
-    {
+
+    public enum UserState {
         NONE = 0,
         BTN_LINE_1ST_CLICK = 1,
         BTN_LINE_2ST_CLICK = 2,
-        BTN_CIRCLE_1ST_CLICK ,
-        BTN_CIRCLE_2ST_CLICK ,
+        BTN_CIRCLE_1ST_CLICK,
+        BTN_CIRCLE_2ST_CLICK,
         BTN_BEZIER_1ST_CLICK,
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
         BTN_BEZIER_4TH_CLICK,
         SCALE,
         STRECH,
-        ROTATE
+        ROTATE,
+        MOVE
     }
 
-    public enum PixelStyle
-    {
+    public enum PixelStyle {
         DEFAULT = 0,
         BOLD
     }
@@ -53,21 +52,19 @@ namespace ComputerGraphics {
         public Point lastPoint = new Point();
         public Bezier bezier = new Bezier();
         private static string pwd = Directory.GetCurrentDirectory();
-        public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
+        public string tempFilePath = pwd + "\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
         private Point anchorPoint = new Point();
         private FileParserUtil parser = new FileParserUtil();
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
-        //private Button anchorPointBtn = new Button();
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         private int SCALE_UP = 1;
         private int SCALE_DOWN = 0;
 
 
-        public void WriteToTrackingFile(string str, string shapeKey)
-        {
+        public void WriteToTrackingFile(string str, string shapeKey) {
             string[] full_file = File.ReadAllLines(tempFilePath);
             List<string> lines = new List<string>();
             int lineNum = 0;
@@ -78,19 +75,17 @@ namespace ComputerGraphics {
                     break;
                 }
             }
-            lines.Insert(lineNum+1, str);
+            lines.Insert(lineNum + 1, str);
             File.WriteAllLines(tempFilePath, lines.ToArray());
         }
 
-        public void CreatNewTxtFile()
-        {
+        public void CreatNewTxtFile() {
             File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
             File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
             File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
-        public MainWindow()
-        {
+        public MainWindow() {
             InitializeComponent();
 
             tbBezierNumOfLines.IsEnabled = false;
@@ -107,7 +102,7 @@ namespace ComputerGraphics {
             Canvas.SetLeft(anchorPointBtn, 0);
             Canvas.SetTop(anchorPointBtn, 0);
 
-        
+
             if (!myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Add(anchorPointBtn);
             }
@@ -135,9 +130,24 @@ namespace ComputerGraphics {
                     break;
                 case UserState.ROTATE:
                     break;
+                case UserState.MOVE:
+                    MoveShapes(dx, dy);
+                    break;
             }
 
             DrawShapesFromFile(parser);
+        }
+
+        private void MoveShapes(double dx, double dy) {
+            foreach (Line line in parser.lineList) {
+                line.Move(dx, dy);
+            }
+            foreach (Circle circle in parser.circleList) {
+                circle.Move(dx, dy);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                bezier.Move(dx, dy);
+            }
         }
 
         private void OnAnchorPointBtnMouseDown(object s, MouseButtonEventArgs e) {
@@ -176,7 +186,7 @@ namespace ComputerGraphics {
         }
 
         private double GetScaleValue(int SCALE_DIRECTION, double dy, double y2, double y1) {
-            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2-y1);
+            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2 - y1);
             if (SCALE_DIRECTION == SCALE_DOWN) {
                 scaleValue = 1 - scaleValue;
             }
@@ -190,13 +200,11 @@ namespace ComputerGraphics {
             p2.Y *= scaleValue;
         }
 
-        public void OnBtnClearClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnClearClicked(object sender, RoutedEventArgs e) {
             Clear();
         }
 
-        public void Clear(bool clearCache = true)
-        {
+        public void Clear(bool clearCache = true) {
             state = UserState.NONE;
             ToggleOffAllButtons();
             myCanvas.Children.Clear();
@@ -215,19 +223,16 @@ namespace ComputerGraphics {
             anchorPoint.X = anchorPoint.Y = 0;
         }
 
-        public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnCircleClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnCircle);
             state = UserState.BTN_CIRCLE_1ST_CLICK;
         }
 
-        public void OnBtnBrushClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnBrushClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnBrush);
         }
 
-        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnPaintcan);
         }
 
@@ -235,8 +240,7 @@ namespace ComputerGraphics {
             DrawCircle(obj.pt1, obj.pt2);
         }
 
-        public void DrawCircle(Point p1, Point p2)
-        {
+        public void DrawCircle(Point p1, Point p2) {
             int xCenter = Convert.ToInt32(p2.X);
             int yCenter = Convert.ToInt32(p2.Y);
             int xr = Convert.ToInt32(p1.X);
@@ -246,12 +250,11 @@ namespace ComputerGraphics {
             var b = (yCenter - yr);
             var r = Math.Sqrt(a * a + b * b);
 
-            for (double i = 0.0; i < 360.0; i += 0.1)
-            {
-            double angle = i * System.Math.PI / 180;
-            int x = (int)(xr + r * System.Math.Cos(angle));
-            int y = (int)(yr + r * System.Math.Sin(angle));
-                    SetPixel(x, y);
+            for (double i = 0.0; i < 360.0; i += 0.1) {
+                double angle = i * System.Math.PI / 180;
+                int x = (int)(xr + r * System.Math.Cos(angle));
+                int y = (int)(yr + r * System.Math.Sin(angle));
+                SetPixel(x, y);
             }
 
         }
@@ -270,12 +273,11 @@ namespace ComputerGraphics {
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
         public void DrawLine(Line line) {
-            if(line != null)
+            if (line != null)
                 DrawLine(line.pt1, line.pt2);
         }
 
-        public void DrawLine(Point p1, Point p2)
-        {
+        public void DrawLine(Point p1, Point p2) {
             int x0 = Convert.ToInt32(p1.X);
             int y0 = Convert.ToInt32(p1.Y);
             int x1 = Convert.ToInt32(p2.X);
@@ -285,25 +287,21 @@ namespace ComputerGraphics {
             if (x0 > x1) { Swap<int>(ref x0, ref x1); Swap<int>(ref y0, ref y1); }
             int dX = (x1 - x0), dY = Math.Abs(y1 - y0), err = (dX / 2), ystep = (y0 < y1 ? 1 : -1), y = y0;
 
-            for (int x = x0; x <= x1; ++x)
-            {
+            for (int x = x0; x <= x1; ++x) {
                 if (!(steep ? SetPixel(y, x) : SetPixel(x, y))) return;
                 err = err - dY;
                 if (err < 0) { y += ystep; err += dX; }
             }
         }
 
-        public string PointToString(Point p)
-        {
+        public string PointToString(Point p) {
             return p.X.ToString() + ',' + p.Y.ToString();
         }
 
-        public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
-        {
+        public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e) {
             Point p = e.GetPosition(myCanvas);
 
-            switch (state)
-            {
+            switch (state) {
                 case UserState.NONE:
                     break;
                 case UserState.BTN_LINE_1ST_CLICK:
@@ -344,9 +342,9 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
                     SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
-                    DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
+                    DrawBezierCurve(bezier, tbBezierNumOfLines.Text);
                     WriteToTrackingFile(
-                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim + 
+                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim +
                         PointToString(bezier.cp3) + delim + PointToString(bezier.cp4), ShapeName.BEZIER.ToString());
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
@@ -356,8 +354,7 @@ namespace ComputerGraphics {
             //UpdateAnchorPoint(p);
         }
 
-        public void DrawBezierCurve(Bezier b , string smoothingRate)
-        {
+        public void DrawBezierCurve(Bezier b, string smoothingRate) {
             var lineStart = new Point(0, 0);
             var lineEnd = new Point(0, 0);
             var bezierPoints = new List<Point>();
@@ -365,15 +362,13 @@ namespace ComputerGraphics {
 
             RemoveBezierGuidePoints(b);
 
-            for (double t = 0.0; t <= 1.0; t = t + smoothingrate)
-            {
+            for (double t = 0.0; t <= 1.0; t = t + smoothingrate) {
                 var put_x = Math.Pow(1 - t, 3) * b.cp1.X + 3 * t * Math.Pow(1 - t, 2) * b.cp2.X + 3 * t * t * (1 - t) * b.cp3.X + Math.Pow(t, 3) * b.cp4.X; // Formula to draw curve
                 var put_y = Math.Pow(1 - t, 3) * b.cp1.Y + 3 * t * Math.Pow(1 - t, 2) * b.cp2.Y + 3 * t * t * (1 - t) * b.cp3.Y + Math.Pow(t, 3) * b.cp4.Y;
                 bezierPoints.Add(new Point(put_x, put_y));
             }
 
-            for (int i = 0; i < bezierPoints.Count - 1; i++)
-            {
+            for (int i = 0; i < bezierPoints.Count - 1; i++) {
                 DrawLine(bezierPoints[i], bezierPoints[i + 1]);
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
@@ -394,7 +389,7 @@ namespace ComputerGraphics {
             }
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
             rect.Stroke = color ?? Brushes.Blue;
-            if(style == PixelStyle.BOLD) {
+            if (style == PixelStyle.BOLD) {
                 rect.StrokeThickness = STROKE_BOLD;
                 rect.Width = STROKE_BOLD;
                 rect.Height = STROKE_BOLD;
@@ -414,7 +409,7 @@ namespace ComputerGraphics {
         public void ToggleOffAllButtons(ToggleButton activeBtn = null) {
 
             foreach (var item in mainToolbar.Items) {
-                if(item is ToggleButton) {
+                if (item is ToggleButton) {
                     ((ToggleButton)item).IsChecked = false;
                 }
             }
@@ -452,7 +447,7 @@ namespace ComputerGraphics {
         }
 
         private void DrawBezierCurves(List<Bezier> bezierList) {
-            foreach(var obj in bezierList) {
+            foreach (var obj in bezierList) {
                 DrawBezierCurve(obj, Bezier.DEFAULT_SMOOTHING_RATE);
                 WriteToTrackingFile(
                     PointToString(obj.cp1) + delim +
@@ -486,7 +481,7 @@ namespace ComputerGraphics {
         }
 
         private void SaveFile(string fileName) {
-            if(File.Exists(tempFilePath) && File.Exists(currentWorkingFile)) {
+            if (File.Exists(tempFilePath) && File.Exists(currentWorkingFile)) {
                 File.Delete(currentWorkingFile);
                 File.Copy(tempFilePath, currentWorkingFile);
             }
@@ -510,7 +505,7 @@ namespace ComputerGraphics {
         }
 
         private void UpdateAnchorPoint(Point p) {
-            anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
+            anchorPoint.X = Math.Max(anchorPoint.X, p.X);
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
             //var currX = Canvas.GetLeft(anchorPointBtn);
             //var currY = Canvas.GetTop(anchorPointBtn);
@@ -528,7 +523,13 @@ namespace ComputerGraphics {
             else {
                 anchorPointBtn.Visibility = Visibility.Hidden;
             }
-            
+
+        }
+
+        public void OnBtnMoveClicked(object sender, RoutedEventArgs e) {
+            state = UserState.MOVE;
+            ToggleOffAllButtons(btnMove);
+            ShowAnchorPoint();
         }
 
     }
