@@ -54,9 +54,15 @@
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnStrech" Click="OnBtnStrechClicked" ToolTip="Strech shape">
+                <ToggleButton x:Name="btnStrechX" Click="OnBtnStrechXClicked" ToolTip="Shear shape over the X axis">
                     <Image 
-						Source="pack://application:,,,/icons/strech.png" 
+						Source="pack://application:,,,/icons/strech_x.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton x:Name="btnStrechY" Click="OnBtnStrechYClicked" ToolTip="Shear shape over the Y axis">
+                    <Image 
+						Source="pack://application:,,,/icons/strech_y.png" 
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>

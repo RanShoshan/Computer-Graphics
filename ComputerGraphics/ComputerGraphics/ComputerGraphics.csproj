@@ -110,9 +110,6 @@
     <Resource Include="icons\scale.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icons\strech.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="icons\rotate.png" />
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +120,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icons\mirror_x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\strech_x.png" />
+    <Resource Include="icons\strech_y.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

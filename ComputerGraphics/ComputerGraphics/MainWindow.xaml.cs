@@ -534,8 +534,14 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
-        public void OnBtnStrechClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnStrech);
+        public void OnBtnStrechXClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnStrechX);
+            state = UserState.STRECH;
+            ShowAnchorPoint();
+        }
+
+        public void OnBtnStrechYClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons(btnStrechY);
             state = UserState.STRECH;
             ShowAnchorPoint();
         }
