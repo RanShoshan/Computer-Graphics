@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * ran shoshan 308281575
+ * &
+ * shay rubach 305687352
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +24,7 @@ namespace ComputerGraphics {
         
         public readonly List<Bezier> bezierList = new List<Bezier>();
         public readonly List<Circle> circleList = new List<Circle>();
-        public readonly List<Line> lineList = new List<Line>();
+        public readonly List<MyLine> lineList = new List<MyLine>();
         public static readonly char delimiter = ',';
 
         public void ParseFile(string fileName) {
@@ -63,7 +69,7 @@ namespace ComputerGraphics {
         }
 
         private void AddLineToList(string[] vals) {
-            lineList.Add(new Line(vals[0], vals[1], vals[2], vals[3]));
+            lineList.Add(new MyLine(vals[0], vals[1], vals[2], vals[3]));
         }
 
         private ShapeName GetShapeName(string v) {

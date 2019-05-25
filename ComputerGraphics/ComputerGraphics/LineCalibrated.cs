@@ -9,15 +9,15 @@ using System.Windows;
 
 namespace ComputerGraphics {
     internal class LineCalibrated {
-        internal Line uncalibrated;
-        internal Line calibrated;
+        internal MyLine uncalibrated;
+        internal MyLine calibrated;
 
-        internal LineCalibrated(Line line) {
+        internal LineCalibrated(MyLine line) {
             uncalibrated = line;
             calibrated = CalculateCalibratedPoint(uncalibrated);
         }
 
-        private Line CalculateCalibratedPoint(Line uncalibrated) {
+        private MyLine CalculateCalibratedPoint(MyLine uncalibrated) {
             Point p1 = new Point();
             Point p2 = new Point();
 
@@ -34,7 +34,7 @@ namespace ComputerGraphics {
                 p1.X = uncalibrated.pt1.X - uncalibrated.pt2.X;
             }
 
-            return new Line(p1, p2);
+            return new MyLine(p1, p2);
         }
 
         internal void FixCalibrationOffset() {

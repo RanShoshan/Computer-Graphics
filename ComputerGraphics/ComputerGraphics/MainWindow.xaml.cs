@@ -12,32 +12,36 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace ComputerGraphics {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-   
 
-    public enum UserState
-    {
+
+    public enum UserState {
         NONE = 0,
         BTN_LINE_1ST_CLICK = 1,
         BTN_LINE_2ST_CLICK = 2,
-        BTN_CIRCLE_1ST_CLICK ,
-        BTN_CIRCLE_2ST_CLICK ,
+        BTN_CIRCLE_1ST_CLICK,
+        BTN_CIRCLE_2ST_CLICK,
         BTN_BEZIER_1ST_CLICK,
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
         BTN_BEZIER_4TH_CLICK,
         SCALE,
         STRECH,
-        ROTATE
+        ROTATE,
+        MOVE,
+        MIRROR
     }
 
-    public enum PixelStyle
-    {
+    public enum MirrorDirection {
+        LEFT,RIGHT,UP,DOWN
+    }
+    public enum PixelStyle {
         DEFAULT = 0,
         BOLD
     }
@@ -53,21 +57,20 @@ namespace ComputerGraphics {
         public Point lastPoint = new Point();
         public Bezier bezier = new Bezier();
         private static string pwd = Directory.GetCurrentDirectory();
-        public string tempFilePath = pwd+"\\tempWorkingFilePath.txt";
+        public string tempFilePath = pwd + "\\tempWorkingFilePath.txt";
         private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
         private Point anchorPoint = new Point();
         private FileParserUtil parser = new FileParserUtil();
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
-        //private Button anchorPointBtn = new Button();
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         private int SCALE_UP = 1;
         private int SCALE_DOWN = 0;
+        Point centerPoint = new Point();
 
 
-        public void WriteToTrackingFile(string str, string shapeKey)
-        {
+        public void WriteToTrackingFile(string str, string shapeKey) {
             string[] full_file = File.ReadAllLines(tempFilePath);
             List<string> lines = new List<string>();
             int lineNum = 0;
@@ -78,25 +81,22 @@ namespace ComputerGraphics {
                     break;
                 }
             }
-            lines.Insert(lineNum+1, str);
+            lines.Insert(lineNum + 1, str);
             File.WriteAllLines(tempFilePath, lines.ToArray());
         }
 
-        public void CreatNewTxtFile()
-        {
+        public void CreatNewTxtFile() {
             File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
             File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
             File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
-        public MainWindow()
-        {
+        public MainWindow() {
             InitializeComponent();
 
             tbBezierNumOfLines.IsEnabled = false;
             Clear();
             InitAnchorPointBtn();
-
 
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
@@ -107,9 +107,40 @@ namespace ComputerGraphics {
             Canvas.SetLeft(anchorPointBtn, 0);
             Canvas.SetTop(anchorPointBtn, 0);
 
-        
+
             if (!myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Add(anchorPointBtn);
+            }
+        }
+
+        private void InitMirrorPointBtns() {
+            PositionMirrorBtns();
+            AttachMirrorBtnsToCanvas();
+        }
+
+        private void PositionMirrorBtns() {
+            Canvas.SetLeft(mirrorBtnLeft, 0);
+            Canvas.SetTop(mirrorBtnLeft, 0);
+            Canvas.SetLeft(mirrorBtnRight, 0);
+            Canvas.SetTop(mirrorBtnRight, 0);
+            Canvas.SetLeft(mirrorBtnUp, 0);
+            Canvas.SetTop(mirrorBtnUp, 0);
+            Canvas.SetLeft(mirrorBtnDown, 0);
+            Canvas.SetTop(mirrorBtnDown, 0);
+        }
+
+        private void AttachMirrorBtnsToCanvas() {
+            if (!myCanvas.Children.Contains(mirrorBtnLeft)) {
+                myCanvas.Children.Add(mirrorBtnLeft);
+            }
+            if (!myCanvas.Children.Contains(mirrorBtnRight)) {
+                myCanvas.Children.Add(mirrorBtnRight);
+            }
+            if (!myCanvas.Children.Contains(mirrorBtnUp)) {
+                myCanvas.Children.Add(mirrorBtnUp);
+            }
+            if (!myCanvas.Children.Contains(mirrorBtnDown)) {
+                myCanvas.Children.Add(mirrorBtnDown);
             }
         }
 
@@ -122,9 +153,10 @@ namespace ComputerGraphics {
             apHelper.upPos = e.GetPosition(myCanvas);
             var dx = apHelper.upPos.X - apHelper.downPos.X;
             var dy = apHelper.upPos.Y - apHelper.downPos.Y;
+            var angle = Double.Parse(tbRotateDegrees.Text);
 
             var currState = state;
-            Clear(false);
+            Clear(false, false);
             parser.ParseFile(tempFilePath);
 
             switch (currState) {
@@ -134,10 +166,61 @@ namespace ComputerGraphics {
                 case UserState.STRECH:
                     break;
                 case UserState.ROTATE:
+                    RotateShapes(angle);
                     break;
+                case UserState.MOVE:
+                    MoveShapes(dx, dy);
+                    break;
+                case UserState.MIRROR:
+                    MirrorShapes(CalculateMirrorDirection());
+                    break;
+
             }
 
             DrawShapesFromFile(parser);
+        }
+
+        private MirrorDirection CalculateMirrorDirection() {
+            return MirrorDirection.RIGHT;
+        }
+
+        private void MirrorShapes(MirrorDirection direction) {
+            centerPoint.X = myCanvas.ActualWidth / 2;
+            centerPoint.Y = myCanvas.ActualHeight / 2;
+
+            foreach (MyLine line in parser.lineList) {
+                line.Mirror(centerPoint, direction);
+            }
+            foreach (Circle circle in parser.circleList) {
+                circle.Mirror(centerPoint, direction);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                bezier.Mirror(centerPoint, direction);
+            }
+        }
+
+        private double CalculateAngleToRotate() {
+            var deltaX = apHelper.upPos.X - (myCanvas.ActualWidth/2);
+            var deltaY = (myCanvas.ActualHeight/2) - apHelper.upPos.X;
+            var thetaRadians = Math.Atan2(deltaY, deltaX);
+
+            if (thetaRadians < 0)
+                thetaRadians = Math.Abs(thetaRadians);
+            else
+                thetaRadians  = thetaRadians * (180.0 / Math.PI);
+            return thetaRadians;
+        }
+
+        private void MoveShapes(double dx, double dy) {
+            foreach (MyLine line in parser.lineList) {
+                line.Move(dx, dy);
+            }
+            foreach (Circle circle in parser.circleList) {
+                circle.Move(dx, dy);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                bezier.Move(dx, dy);
+            }
         }
 
         private void OnAnchorPointBtnMouseDown(object s, MouseButtonEventArgs e) {
@@ -148,7 +231,7 @@ namespace ComputerGraphics {
         private void ScaleShapes(double dx, double dy) {
             int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
 
-            foreach (Line line in parser.lineList) {
+            foreach (MyLine line in parser.lineList) {
                 var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, line.pt2.Y, line.pt1.Y);
 
                 LineCalibrated lc = new LineCalibrated(line);
@@ -176,7 +259,7 @@ namespace ComputerGraphics {
         }
 
         private double GetScaleValue(int SCALE_DIRECTION, double dy, double y2, double y1) {
-            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2-y1);
+            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2 - y1);
             if (SCALE_DIRECTION == SCALE_DOWN) {
                 scaleValue = 1 - scaleValue;
             }
@@ -190,21 +273,22 @@ namespace ComputerGraphics {
             p2.Y *= scaleValue;
         }
 
-        public void OnBtnClearClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnClearClicked(object sender, RoutedEventArgs e) {
             Clear();
         }
 
-        public void Clear(bool clearCache = true)
-        {
-            state = UserState.NONE;
-            ToggleOffAllButtons();
+        public void Clear(bool clearCache = true, bool resetState = true) {
+            if (resetState) {
+                state = UserState.NONE;
+            }
+            ToggleOffAllButtons(null, resetState);
             myCanvas.Children.Clear();
             if (myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Remove(anchorPointBtn);
             }
             myCanvas.Children.Add(anchorPointBtn);
 
+            //REMOVE AND ATTACH MIRROR BTN HERE
             if (clearCache) {
                 parser.ClearCache();
                 File.Delete(tempFilePath);
@@ -213,21 +297,19 @@ namespace ComputerGraphics {
 
 
             anchorPoint.X = anchorPoint.Y = 0;
+            GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
         }
 
-        public void OnBtnCircleClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnCircleClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnCircle);
             state = UserState.BTN_CIRCLE_1ST_CLICK;
         }
 
-        public void OnBtnBrushClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnBrushClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnBrush);
         }
 
-        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e)
-        {
+        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnPaintcan);
         }
 
@@ -235,25 +317,20 @@ namespace ComputerGraphics {
             DrawCircle(obj.pt1, obj.pt2);
         }
 
-        public void DrawCircle(Point p1, Point p2)
-        {
-            int xCenter = Convert.ToInt32(p2.X);
-            int yCenter = Convert.ToInt32(p2.Y);
-            int xr = Convert.ToInt32(p1.X);
-            int yr = Convert.ToInt32(p1.Y);
+        public void DrawCircle(Point p1, Point p2) {
+            var radius = Math.Max(Math.Abs(p1.X - p2.X), Math.Abs(p1.Y - p2.Y));
+            Ellipse circle = new Ellipse() {
+                Width = radius*2,
+                Height = radius*2,
+                Stroke = Brushes.Blue,
+                StrokeThickness = 1
+            };
 
-            var a = (xCenter - xr);
-            var b = (yCenter - yr);
-            var r = Math.Sqrt(a * a + b * b);
+            myCanvas.Children.Add(circle);
 
-            for (double i = 0.0; i < 360.0; i += 0.1)
-            {
-            double angle = i * System.Math.PI / 180;
-            int x = (int)(xr + r * System.Math.Cos(angle));
-            int y = (int)(yr + r * System.Math.Sin(angle));
-                    SetPixel(x, y);
-            }
-
+            UpdateAnchorPoint(new Point(p1.X + radius, p1.Y - radius));
+            circle.SetValue(Canvas.LeftProperty, (double)p1.X- radius);
+            circle.SetValue(Canvas.TopProperty, (double)p1.Y - radius);
         }
 
         public void OnBtnLineClicked(object sender, RoutedEventArgs e) {
@@ -269,41 +346,33 @@ namespace ComputerGraphics {
 
         private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
 
-        public void DrawLine(Line line) {
-            if(line != null)
+        public void DrawLine(MyLine line) {
+            if (line != null)
                 DrawLine(line.pt1, line.pt2);
         }
 
-        public void DrawLine(Point p1, Point p2)
-        {
-            int x0 = Convert.ToInt32(p1.X);
-            int y0 = Convert.ToInt32(p1.Y);
-            int x1 = Convert.ToInt32(p2.X);
-            int y1 = Convert.ToInt32(p2.Y);
-            bool steep = Math.Abs(y1 - y0) > Math.Abs(x1 - x0);
-            if (steep) { Swap<int>(ref x0, ref y0); Swap<int>(ref x1, ref y1); }
-            if (x0 > x1) { Swap<int>(ref x0, ref x1); Swap<int>(ref y0, ref y1); }
-            int dX = (x1 - x0), dY = Math.Abs(y1 - y0), err = (dX / 2), ystep = (y0 < y1 ? 1 : -1), y = y0;
-
-            for (int x = x0; x <= x1; ++x)
-            {
-                if (!(steep ? SetPixel(y, x) : SetPixel(x, y))) return;
-                err = err - dY;
-                if (err < 0) { y += ystep; err += dX; }
-            }
+        public void DrawLine(Point p1, Point p2) {
+            var line = new Line {
+                Stroke = Brushes.Blue,
+                X1 = p1.X,
+                X2 = p2.X,
+                Y1 = p1.Y,
+                Y2 = p2.Y,
+                StrokeThickness = 1
+            };
+            myCanvas.Children.Add(line);
+            UpdateAnchorPoint(p1);
+            UpdateAnchorPoint(p2);
         }
 
-        public string PointToString(Point p)
-        {
+        public string PointToString(Point p) {
             return p.X.ToString() + ',' + p.Y.ToString();
         }
 
-        public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
-        {
+        public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e) {
             Point p = e.GetPosition(myCanvas);
 
-            switch (state)
-            {
+            switch (state) {
                 case UserState.NONE:
                     break;
                 case UserState.BTN_LINE_1ST_CLICK:
@@ -329,24 +398,24 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    //SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
-                    SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
-                    DrawBezierCurve(bezier , tbBezierNumOfLines.Text);
+                    //SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
+                    DrawBezierCurve(bezier, tbBezierNumOfLines.Text);
                     WriteToTrackingFile(
-                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim + 
+                        PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim +
                         PointToString(bezier.cp3) + delim + PointToString(bezier.cp4), ShapeName.BEZIER.ToString());
                     state = UserState.BTN_BEZIER_1ST_CLICK;
                     break;
@@ -356,8 +425,7 @@ namespace ComputerGraphics {
             //UpdateAnchorPoint(p);
         }
 
-        public void DrawBezierCurve(Bezier b , string smoothingRate)
-        {
+        public void DrawBezierCurve(Bezier b, string smoothingRate) {
             var lineStart = new Point(0, 0);
             var lineEnd = new Point(0, 0);
             var bezierPoints = new List<Point>();
@@ -365,15 +433,13 @@ namespace ComputerGraphics {
 
             RemoveBezierGuidePoints(b);
 
-            for (double t = 0.0; t <= 1.0; t = t + smoothingrate)
-            {
+            for (double t = 0.0; t <= 1.0; t = t + smoothingrate) {
                 var put_x = Math.Pow(1 - t, 3) * b.cp1.X + 3 * t * Math.Pow(1 - t, 2) * b.cp2.X + 3 * t * t * (1 - t) * b.cp3.X + Math.Pow(t, 3) * b.cp4.X; // Formula to draw curve
                 var put_y = Math.Pow(1 - t, 3) * b.cp1.Y + 3 * t * Math.Pow(1 - t, 2) * b.cp2.Y + 3 * t * t * (1 - t) * b.cp3.Y + Math.Pow(t, 3) * b.cp4.Y;
                 bezierPoints.Add(new Point(put_x, put_y));
             }
 
-            for (int i = 0; i < bezierPoints.Count - 1; i++)
-            {
+            for (int i = 0; i < bezierPoints.Count - 1; i++) {
                 DrawLine(bezierPoints[i], bezierPoints[i + 1]);
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
@@ -394,7 +460,7 @@ namespace ComputerGraphics {
             }
             System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
             rect.Stroke = color ?? Brushes.Blue;
-            if(style == PixelStyle.BOLD) {
+            if (style == PixelStyle.BOLD) {
                 rect.StrokeThickness = STROKE_BOLD;
                 rect.Width = STROKE_BOLD;
                 rect.Height = STROKE_BOLD;
@@ -411,10 +477,10 @@ namespace ComputerGraphics {
 
         }
 
-        public void ToggleOffAllButtons(ToggleButton activeBtn = null) {
+        public void ToggleOffAllButtons(ToggleButton activeBtn = null, bool hideAnchor = true) {
 
             foreach (var item in mainToolbar.Items) {
-                if(item is ToggleButton) {
+                if (item is ToggleButton) {
                     ((ToggleButton)item).IsChecked = false;
                 }
             }
@@ -423,7 +489,9 @@ namespace ComputerGraphics {
                 activeBtn.IsChecked = true;
             }
 
-            ShowAnchorPoint(false);
+            if (hideAnchor) {
+                ShowAnchorPoint(false);
+            }
         }
 
         public void OnBtnSaveClicked(object sender, RoutedEventArgs e) {
@@ -446,13 +514,16 @@ namespace ComputerGraphics {
         }
 
         private void DrawShapesFromFile(FileParserUtil parser) {
+            File.Delete(tempFilePath);
+            CreatNewTxtFile();
+
             DrawLines(parser.lineList);
             DrawCircles(parser.circleList);
             DrawBezierCurves(parser.bezierList);
         }
 
         private void DrawBezierCurves(List<Bezier> bezierList) {
-            foreach(var obj in bezierList) {
+            foreach (var obj in bezierList) {
                 DrawBezierCurve(obj, Bezier.DEFAULT_SMOOTHING_RATE);
                 WriteToTrackingFile(
                     PointToString(obj.cp1) + delim +
@@ -474,7 +545,7 @@ namespace ComputerGraphics {
             }
         }
 
-        private void DrawLines(List<Line> lineList) {
+        private void DrawLines(List<MyLine> lineList) {
             foreach (var obj in lineList) {
                 DrawLine(obj);
                 WriteToTrackingFile(
@@ -486,7 +557,7 @@ namespace ComputerGraphics {
         }
 
         private void SaveFile(string fileName) {
-            if(File.Exists(tempFilePath) && File.Exists(currentWorkingFile)) {
+            if (File.Exists(tempFilePath) && File.Exists(currentWorkingFile)) {
                 File.Delete(currentWorkingFile);
                 File.Copy(tempFilePath, currentWorkingFile);
             }
@@ -510,25 +581,129 @@ namespace ComputerGraphics {
         }
 
         private void UpdateAnchorPoint(Point p) {
-            anchorPoint.X = Math.Max(anchorPoint.X, p.X); 
+            anchorPoint.X = Math.Max(anchorPoint.X, p.X);
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
-            //var currX = Canvas.GetLeft(anchorPointBtn);
-            //var currY = Canvas.GetTop(anchorPointBtn);
             Canvas.SetLeft(anchorPointBtn, anchorPoint.X);
             Canvas.SetTop(anchorPointBtn, anchorPoint.Y);
-            Console.WriteLine("p = " + p.X + "," + p.Y);
-            Console.WriteLine("anchorPoint = " + anchorPoint.X + "," + anchorPoint.Y);
+            UpdateMirrorBtns();
+        }
+
+        private void UpdateMirrorBtns() {
+            var currX = Canvas.GetLeft(anchorPointBtn);
+            var currY = Canvas.GetTop(anchorPointBtn);
+            var offset = 50;
+            Canvas.SetLeft(mirrorBtnLeft, currX - offset);
+            Canvas.SetTop(mirrorBtnLeft, currY);
+
+            Canvas.SetLeft(mirrorBtnRight, currX + offset);
+            Canvas.SetTop(mirrorBtnRight, currY);
+
+            Canvas.SetLeft(mirrorBtnUp, currX);
+            Canvas.SetTop(mirrorBtnUp, currY - offset);
+
+            Canvas.SetLeft(mirrorBtnDown, currX + offset);
+            Canvas.SetTop(mirrorBtnDown, currY);
+
         }
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
                 //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
                 anchorPointBtn.Visibility = Visibility.Visible;
+                ShowMirrorBtn();
             }
             else {
                 anchorPointBtn.Visibility = Visibility.Hidden;
+                ShowMirrorBtn(false);
             }
+
+        }
+
+        private void ShowMirrorBtn(bool show = true) {
+            mirrorBtnLeft.Visibility = show ? Visibility.Visible : Visibility.Hidden;
+            mirrorBtnRight.Visibility = show ? Visibility.Visible : Visibility.Hidden;
+            mirrorBtnUp.Visibility = show ? Visibility.Visible : Visibility.Hidden;
+            mirrorBtnDown.Visibility = show ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        public void OnBtnMoveClicked(object sender, RoutedEventArgs e) {
+            state = UserState.MOVE;
+            ToggleOffAllButtons(btnMove);
+            ShowAnchorPoint();
+        }
+
+
+        public void OnBtnMirrorClicked(object sender, RoutedEventArgs e) {
+            state = UserState.MIRROR;
+            ToggleOffAllButtons(btnMirror);
+            ShowAnchorPoint();
+        }
+
+        public void OnLeftMirrorBtnClick(object sender, RoutedEventArgs e) {
             
+        }
+
+        public void OnRightMirrorBtnClick(object sender, RoutedEventArgs e) {
+
+        }
+
+        public void OnUpMirrorBtnClick(object sender, RoutedEventArgs e) {
+
+        }
+
+        public void OnDownMirrorBtnClick(object sender, RoutedEventArgs e) {
+
+        }
+
+        //rotate shapes around center point
+        private void RotateShapes(double angle) {
+
+            foreach (MyLine line in parser.lineList) {
+                /* We are using default center point (center of screen). But we could also calculate 
+                 * the line's as middle point:
+                 * lineCenterPoint.X/Y = (line.pt1.X/Y + line.pt2.X/Y) / 2;
+                 */
+
+                //rotate points around center screen:
+                line.pt1 = RotatePoint(line.pt1, angle);
+                line.pt2 = RotatePoint(line.pt2, angle);
+
+            }
+            foreach (Circle circle in parser.circleList) {
+                //rotate points around center screen:
+                circle.pt1 = RotatePoint(circle.pt1, angle);
+                circle.pt2 = RotatePoint(circle.pt2, angle);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                /* We are using default center point (center of screen). But we could also calculate 
+                 * middle point of the bezier curve as as:
+                 * lineCenterPoint.X/Y = (bezier.cp1.X/Y + bezier.cp2.X/Y + bezier.cp3.X/Y + bezier.cp4.X/Y) / 4;
+                 */
+                
+                //rotate points around center screen:
+                bezier.cp1 = RotatePoint(bezier.cp1, angle);
+                bezier.cp2 = RotatePoint(bezier.cp2, angle);
+                bezier.cp3 = RotatePoint(bezier.cp3, angle);
+                bezier.cp4 = RotatePoint(bezier.cp4, angle);
+            }
+        }
+
+        internal Point RotatePoint(Point pointToRotate, double angleInDegrees) {
+            centerPoint.X = myCanvas.ActualWidth / 2;
+            centerPoint.Y = myCanvas.ActualHeight / 2;
+            return RotatePoint(pointToRotate, centerPoint, angleInDegrees);
+        }
+
+        internal Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees) {
+            double angleInRadians = angleInDegrees * (Math.PI / 180);
+            double cosTheta = Math.Cos(angleInRadians);
+            double sinTheta = Math.Sin(angleInRadians);
+            return new Point {
+                X = (cosTheta * (pointToRotate.X - centerPoint.X) -
+                    sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
+                Y = (sinTheta * (pointToRotate.X - centerPoint.X) +
+                    cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
+            };
         }
 
     }
