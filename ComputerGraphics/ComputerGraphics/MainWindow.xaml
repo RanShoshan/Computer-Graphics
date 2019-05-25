@@ -8,6 +8,11 @@
     <DockPanel>
         <ToolBarTray DockPanel.Dock="Left" Background="AntiqueWhite" Orientation="Vertical">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite">
+                <Button Click="OnBtnHelpClicked" Padding="10">
+                    <Button.Content>
+                        <TextBlock FontSize="20"><Bold>Help</Bold></TextBlock>
+                    </Button.Content>
+                </Button>
                 <Button Content="Clear" Click="OnBtnClearClicked" Padding="10"/>
                 <Button Content="Save" Click="OnBtnSaveClicked" Padding="10"/>
                 <Button Content="Load" Click="OnBtnLoadClicked" Padding="10"/>

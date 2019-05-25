@@ -584,6 +584,10 @@ namespace ComputerGraphics {
             MirrorShapes(MirrorDirection.Y);
         }
 
+        public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
+            
+        }
+
         
         //rotate shapes around center point
         private void RotateShapes(double angle) {
