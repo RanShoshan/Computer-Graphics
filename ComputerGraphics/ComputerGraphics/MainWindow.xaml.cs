@@ -148,7 +148,7 @@ namespace ComputerGraphics {
 
         private void MirrorShapes(MirrorDirection direction) {
             state = UserState.MIRROR;
-            ToggleOffAllButtons(btnMirrorY);
+            ToggleOffAllButtons(direction == MirrorDirection .X ? btnMirrorX : btnMirrorY);
             Clear(false);
 
             centerPoint.X = myCanvas.ActualWidth / 2;

@@ -43,13 +43,18 @@ namespace ComputerGraphics {
 
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch (direction) {
-                case MirrorDirection.X:
+                case MirrorDirection.Y:
                     cp1.X = centerPoint.X + (centerPoint.X - cp1.X);
                     cp2.X = centerPoint.X + (centerPoint.X - cp2.X);
                     cp3.X = centerPoint.X + (centerPoint.X - cp3.X);
                     cp4.X = centerPoint.X + (centerPoint.X - cp4.X);
                     break;
-                case MirrorDirection.Y: break;
+                case MirrorDirection.X:
+                    cp1.Y = centerPoint.Y + (centerPoint.Y - cp1.Y);
+                    cp2.Y = centerPoint.Y + (centerPoint.Y - cp2.Y);
+                    cp3.Y = centerPoint.Y + (centerPoint.Y - cp3.Y);
+                    cp4.Y = centerPoint.Y + (centerPoint.Y - cp4.Y);
+                    break;
             }
 
         }
@@ -93,11 +98,13 @@ namespace ComputerGraphics {
 
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch(direction) {
-                case MirrorDirection.X:
+                case MirrorDirection.Y:
                     pt1.X = centerPoint.X + (centerPoint.X - pt1.X);
                     pt2.X = centerPoint.X + (centerPoint.X - pt2.X);
                     break;
-                case MirrorDirection.Y:
+                case MirrorDirection.X:
+                    pt1.Y = centerPoint.Y + (centerPoint.Y - pt1.Y);
+                    pt2.Y = centerPoint.Y + (centerPoint.Y - pt2.Y);
                     break;
             }
         }
