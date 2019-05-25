@@ -34,7 +34,8 @@ namespace ComputerGraphics {
         SCALE,
         STRECH,
         ROTATE,
-        MOVE
+        MOVE,
+        MIRROR
     }
 
     public enum PixelStyle {
@@ -63,6 +64,7 @@ namespace ComputerGraphics {
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         private int SCALE_UP = 1;
         private int SCALE_DOWN = 0;
+        Point centerPoint = new Point();
 
 
         public void WriteToTrackingFile(string str, string shapeKey) {
@@ -93,7 +95,6 @@ namespace ComputerGraphics {
             Clear();
             InitAnchorPointBtn();
 
-
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
         }
@@ -118,7 +119,7 @@ namespace ComputerGraphics {
             apHelper.upPos = e.GetPosition(myCanvas);
             var dx = apHelper.upPos.X - apHelper.downPos.X;
             var dy = apHelper.upPos.Y - apHelper.downPos.Y;
-            var angle = Double.Parse(tbRotateDegrees.Text) % 360;
+            var angle = Double.Parse(tbRotateDegrees.Text);
 
             var currState = state;
             Clear(false, false);
@@ -136,9 +137,28 @@ namespace ComputerGraphics {
                 case UserState.MOVE:
                     MoveShapes(dx, dy);
                     break;
+                case UserState.MIRROR:
+                    MirrorShapes();
+                    break;
+
             }
 
             DrawShapesFromFile(parser);
+        }
+
+        private void MirrorShapes() {
+            centerPoint.X = myCanvas.ActualWidth / 2;
+            centerPoint.X = myCanvas.ActualHeight / 2;
+
+            foreach (MyLine line in parser.lineList) {
+                line.Mirror(centerPoint);
+            }
+            foreach (Circle circle in parser.circleList) {
+                circle.Mirror(centerPoint);
+            }
+            foreach (Bezier bezier in parser.bezierList) {
+                bezier.Mirror(centerPoint);
+            }
         }
 
         private double CalculateAngleToRotate() {
@@ -547,6 +567,13 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
+
+        public void OnBtnMirrorClicked(object sender, RoutedEventArgs e) {
+            state = UserState.MIRROR;
+            ToggleOffAllButtons(btnMirror);
+            ShowAnchorPoint();
+        }
+
         //rotate shapes around center point
         private void RotateShapes(double angle) {
 
@@ -581,10 +608,8 @@ namespace ComputerGraphics {
         }
 
         internal Point RotatePoint(Point pointToRotate, double angleInDegrees) {
-            Point centerPoint = new Point {
-                X = myCanvas.ActualWidth / 2,
-                Y = myCanvas.ActualHeight / 2
-            };
+            centerPoint.X = myCanvas.ActualWidth / 2;
+            centerPoint.Y = myCanvas.ActualHeight / 2;
             return RotatePoint(pointToRotate, centerPoint, angleInDegrees);
         }
 

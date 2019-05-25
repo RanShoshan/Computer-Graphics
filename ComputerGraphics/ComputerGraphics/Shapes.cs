@@ -40,6 +40,14 @@ namespace ComputerGraphics {
             cp3.Y += dy;
             cp4.Y += dy;
         }
+
+        internal void Mirror(Point centerPoint) {
+            cp1.X = centerPoint.X + (centerPoint.X - cp1.X);
+            cp2.X = centerPoint.X + (centerPoint.X - cp2.X);
+            cp3.X = centerPoint.X + (centerPoint.X - cp3.X);
+            cp4.X = centerPoint.X + (centerPoint.X - cp4.X);
+        }
+
     }
 
     public class Circle : MyLine {
@@ -75,11 +83,11 @@ namespace ComputerGraphics {
         }
 
         internal void Rotate() {
-            //var lineCenterPointX = pt1.X - pt2.X;
-            //var lineCenterPointY = pt1.Y - pt2.Y;
-            //Point lineCenterPoint = new Point(lineCenterPointX, lineCenterPointY);
+        }
 
-            //RotatePoint(pt1, lineCenterPoint, 20);
+        internal void Mirror(Point centerPoint) {
+            pt1.X = centerPoint.X + (centerPoint.X - pt1.X);
+            pt2.X = centerPoint.X + (centerPoint.X - pt2.X);
         }
     }
 

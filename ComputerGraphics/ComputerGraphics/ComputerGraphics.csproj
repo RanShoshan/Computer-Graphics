@@ -118,5 +118,8 @@
   <ItemGroup>
     <Resource Include="icons\move.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\mirror.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

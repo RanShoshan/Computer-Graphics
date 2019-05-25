@@ -60,6 +60,12 @@
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
+                <ToggleButton x:Name="btnMirror" Click="OnBtnMirrorClicked" ToolTip="Mirror shape">
+                    <Image 
+						Source="pack://application:,,,/icons/mirror.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
                 <ToggleButton x:Name="btnRotate" Click="OnBtnRotateClicked" ToolTip="Rotate shape clockwise or counter-clockwise">
                     <Image 
 						Source="pack://application:,,,/icons/rotate.png" 
