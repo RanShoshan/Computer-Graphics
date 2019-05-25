@@ -38,6 +38,9 @@ namespace ComputerGraphics {
         MIRROR
     }
 
+    public enum MirrorDirection {
+        LEFT,RIGHT,UP,DOWN
+    }
     public enum PixelStyle {
         DEFAULT = 0,
         BOLD
@@ -151,13 +154,13 @@ namespace ComputerGraphics {
             centerPoint.X = myCanvas.ActualHeight / 2;
 
             foreach (MyLine line in parser.lineList) {
-                line.Mirror(centerPoint);
+                line.Mirror(centerPoint, MirrorDirection.RIGHT);
             }
             foreach (Circle circle in parser.circleList) {
-                circle.Mirror(centerPoint);
+                circle.Mirror(centerPoint, MirrorDirection.RIGHT);
             }
             foreach (Bezier bezier in parser.bezierList) {
-                bezier.Mirror(centerPoint);
+                bezier.Mirror(centerPoint, MirrorDirection.RIGHT);
             }
         }
 
