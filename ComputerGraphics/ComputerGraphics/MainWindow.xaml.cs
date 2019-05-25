@@ -151,7 +151,7 @@ namespace ComputerGraphics {
 
         private void MirrorShapes() {
             centerPoint.X = myCanvas.ActualWidth / 2;
-            centerPoint.X = myCanvas.ActualHeight / 2;
+            centerPoint.Y = myCanvas.ActualHeight / 2;
 
             foreach (MyLine line in parser.lineList) {
                 line.Mirror(centerPoint, MirrorDirection.RIGHT);
