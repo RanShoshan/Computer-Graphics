@@ -60,9 +60,15 @@
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnMirror" Click="OnBtnMirrorClicked" ToolTip="Mirror shape">
+                <ToggleButton x:Name="btnMirrorX" Click="OnMirrorBtnXClick" ToolTip="Mirror shape">
                     <Image 
-						Source="pack://application:,,,/icons/mirror.png" 
+						Source="pack://application:,,,/icons/mirror_x.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton x:Name="btnMirrorY" Click="OnMirrorBtnYClick" ToolTip="Mirror shape">
+                    <Image 
+						Source="pack://application:,,,/icons/mirror_y.png" 
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
@@ -86,35 +92,6 @@
                         PreviewMouseDown="OnAnchorPointBtnMouseDown" 
                         PreviewMouseUp="OnAnchorPointBtnMouseUp" 
                         PreviewMouseMove="OnAnchorPointBtnDrag"
-                        Visibility="Hidden"/>
-
-            <Button Content="" 
-                        x:Name="mirrorBtnLeft"
-                        Width="10"
-                        Height="10"
-                        Background="Red"
-                        Click="OnLeftMirrorBtnClick" 
-                        Visibility="Hidden"/>
-            <Button Content="" 
-                        x:Name="mirrorBtnRight"
-                        Width="10"
-                        Height="10"
-                        Background="Red"
-                        Click="OnRightMirrorBtnClick" 
-                        Visibility="Hidden"/>
-            <Button Content="" 
-                        x:Name="mirrorBtnUp"
-                        Width="10"
-                        Height="10"
-                        Background="Red"
-                        Click="OnUpMirrorBtnClick" 
-                        Visibility="Hidden"/>
-            <Button Content="" 
-                        x:Name="mirrorBtnDown"
-                        Width="10"
-                        Height="10"
-                        Background="Red"
-                        Click="OnDownMirrorBtnClick" 
                         Visibility="Hidden"/>
         </Canvas>
     </DockPanel>

@@ -119,7 +119,10 @@
     <Resource Include="icons\move.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icons\mirror.png" />
+    <Resource Include="icons\mirror_y.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icons\mirror_x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

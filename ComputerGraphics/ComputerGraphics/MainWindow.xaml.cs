@@ -39,7 +39,8 @@ namespace ComputerGraphics {
     }
 
     public enum MirrorDirection {
-        LEFT,RIGHT,UP,DOWN
+        X,
+        Y
     }
     public enum PixelStyle {
         DEFAULT = 0,
@@ -113,37 +114,6 @@ namespace ComputerGraphics {
             }
         }
 
-        private void InitMirrorPointBtns() {
-            PositionMirrorBtns();
-            AttachMirrorBtnsToCanvas();
-        }
-
-        private void PositionMirrorBtns() {
-            Canvas.SetLeft(mirrorBtnLeft, 0);
-            Canvas.SetTop(mirrorBtnLeft, 0);
-            Canvas.SetLeft(mirrorBtnRight, 0);
-            Canvas.SetTop(mirrorBtnRight, 0);
-            Canvas.SetLeft(mirrorBtnUp, 0);
-            Canvas.SetTop(mirrorBtnUp, 0);
-            Canvas.SetLeft(mirrorBtnDown, 0);
-            Canvas.SetTop(mirrorBtnDown, 0);
-        }
-
-        private void AttachMirrorBtnsToCanvas() {
-            if (!myCanvas.Children.Contains(mirrorBtnLeft)) {
-                myCanvas.Children.Add(mirrorBtnLeft);
-            }
-            if (!myCanvas.Children.Contains(mirrorBtnRight)) {
-                myCanvas.Children.Add(mirrorBtnRight);
-            }
-            if (!myCanvas.Children.Contains(mirrorBtnUp)) {
-                myCanvas.Children.Add(mirrorBtnUp);
-            }
-            if (!myCanvas.Children.Contains(mirrorBtnDown)) {
-                myCanvas.Children.Add(mirrorBtnDown);
-            }
-        }
-
         private void OnAnchorPointBtnDrag(object s, MouseEventArgs e) {
             Console.WriteLine("OnAnchorPointBtnDrag: " + e.GetPosition(myCanvas));
         }
@@ -171,23 +141,15 @@ namespace ComputerGraphics {
                 case UserState.MOVE:
                     MoveShapes(dx, dy);
                     break;
-                case UserState.MIRROR:
-                    MirrorShapes(CalculateMirrorDirection());
-                    break;
-
             }
 
             DrawShapesFromFile(parser);
         }
 
-        private MirrorDirection CalculateMirrorDirection() {
-            return MirrorDirection.RIGHT;
-        }
-
         private void MirrorShapes(MirrorDirection direction) {
             centerPoint.X = myCanvas.ActualWidth / 2;
             centerPoint.Y = myCanvas.ActualHeight / 2;
-
+            
             foreach (MyLine line in parser.lineList) {
                 line.Mirror(centerPoint, direction);
             }
@@ -199,17 +161,6 @@ namespace ComputerGraphics {
             }
         }
 
-        private double CalculateAngleToRotate() {
-            var deltaX = apHelper.upPos.X - (myCanvas.ActualWidth/2);
-            var deltaY = (myCanvas.ActualHeight/2) - apHelper.upPos.X;
-            var thetaRadians = Math.Atan2(deltaY, deltaX);
-
-            if (thetaRadians < 0)
-                thetaRadians = Math.Abs(thetaRadians);
-            else
-                thetaRadians  = thetaRadians * (180.0 / Math.PI);
-            return thetaRadians;
-        }
 
         private void MoveShapes(double dx, double dy) {
             foreach (MyLine line in parser.lineList) {
@@ -282,11 +233,7 @@ namespace ComputerGraphics {
                 state = UserState.NONE;
             }
             ToggleOffAllButtons(null, resetState);
-            myCanvas.Children.Clear();
-            if (myCanvas.Children.Contains(anchorPointBtn)) {
-                myCanvas.Children.Remove(anchorPointBtn);
-            }
-            myCanvas.Children.Add(anchorPointBtn);
+            ReattachHelperButtons();
 
             //REMOVE AND ATTACH MIRROR BTN HERE
             if (clearCache) {
@@ -298,6 +245,18 @@ namespace ComputerGraphics {
 
             anchorPoint.X = anchorPoint.Y = 0;
             GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
+        }
+
+        private void ReattachHelperButtons() {
+            myCanvas.Children.Clear();
+            ReattachAnchorPointBtn();
+        }
+
+        private void ReattachAnchorPointBtn() {
+            if (myCanvas.Children.Contains(anchorPointBtn)) {
+                myCanvas.Children.Remove(anchorPointBtn);
+            }
+            myCanvas.Children.Add(anchorPointBtn);
         }
 
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e) {
@@ -585,46 +544,18 @@ namespace ComputerGraphics {
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
             Canvas.SetLeft(anchorPointBtn, anchorPoint.X);
             Canvas.SetTop(anchorPointBtn, anchorPoint.Y);
-            UpdateMirrorBtns();
-        }
-
-        private void UpdateMirrorBtns() {
-            var currX = Canvas.GetLeft(anchorPointBtn);
-            var currY = Canvas.GetTop(anchorPointBtn);
-            var offset = 50;
-            Canvas.SetLeft(mirrorBtnLeft, currX - offset);
-            Canvas.SetTop(mirrorBtnLeft, currY);
-
-            Canvas.SetLeft(mirrorBtnRight, currX + offset);
-            Canvas.SetTop(mirrorBtnRight, currY);
-
-            Canvas.SetLeft(mirrorBtnUp, currX);
-            Canvas.SetTop(mirrorBtnUp, currY - offset);
-
-            Canvas.SetLeft(mirrorBtnDown, currX + offset);
-            Canvas.SetTop(mirrorBtnDown, currY);
-
         }
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
                 //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
                 anchorPointBtn.Visibility = Visibility.Visible;
-                ShowMirrorBtn();
             }
             else {
                 anchorPointBtn.Visibility = Visibility.Hidden;
-                ShowMirrorBtn(false);
             }
 
-        }
-
-        private void ShowMirrorBtn(bool show = true) {
-            mirrorBtnLeft.Visibility = show ? Visibility.Visible : Visibility.Hidden;
-            mirrorBtnRight.Visibility = show ? Visibility.Visible : Visibility.Hidden;
-            mirrorBtnUp.Visibility = show ? Visibility.Visible : Visibility.Hidden;
-            mirrorBtnDown.Visibility = show ? Visibility.Visible : Visibility.Hidden;
-        }
+        } 
 
         public void OnBtnMoveClicked(object sender, RoutedEventArgs e) {
             state = UserState.MOVE;
@@ -632,29 +563,22 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
-
-        public void OnBtnMirrorClicked(object sender, RoutedEventArgs e) {
+        public void OnMirrorBtnXClick(object sender, RoutedEventArgs e) {
             state = UserState.MIRROR;
-            ToggleOffAllButtons(btnMirror);
-            ShowAnchorPoint();
+            ToggleOffAllButtons(btnMirrorX);
+            Clear(false);
+            MirrorShapes(MirrorDirection.X);
+            DrawShapesFromFile(parser);
         }
 
-        public void OnLeftMirrorBtnClick(object sender, RoutedEventArgs e) {
-            
+        public void OnMirrorBtnYClick(object sender, RoutedEventArgs e) {
+            state = UserState.MIRROR;
+            ToggleOffAllButtons(btnMirrorY);
+            Clear(false);
+            MirrorShapes(MirrorDirection.Y);
+            DrawShapesFromFile(parser);
         }
-
-        public void OnRightMirrorBtnClick(object sender, RoutedEventArgs e) {
-
-        }
-
-        public void OnUpMirrorBtnClick(object sender, RoutedEventArgs e) {
-
-        }
-
-        public void OnDownMirrorBtnClick(object sender, RoutedEventArgs e) {
-
-        }
-
+        
         //rotate shapes around center point
         private void RotateShapes(double angle) {
 
