@@ -87,6 +87,35 @@
                         PreviewMouseUp="OnAnchorPointBtnMouseUp" 
                         PreviewMouseMove="OnAnchorPointBtnDrag"
                         Visibility="Hidden"/>
+
+            <Button Content="" 
+                        x:Name="mirrorBtnLeft"
+                        Width="10"
+                        Height="10"
+                        Background="Red"
+                        Click="OnLeftMirrorBtnClick" 
+                        Visibility="Hidden"/>
+            <Button Content="" 
+                        x:Name="mirrorBtnRight"
+                        Width="10"
+                        Height="10"
+                        Background="Red"
+                        Click="OnRightMirrorBtnClick" 
+                        Visibility="Hidden"/>
+            <Button Content="" 
+                        x:Name="mirrorBtnUp"
+                        Width="10"
+                        Height="10"
+                        Background="Red"
+                        Click="OnUpMirrorBtnClick" 
+                        Visibility="Hidden"/>
+            <Button Content="" 
+                        x:Name="mirrorBtnDown"
+                        Width="10"
+                        Height="10"
+                        Background="Red"
+                        Click="OnDownMirrorBtnClick" 
+                        Visibility="Hidden"/>
         </Canvas>
     </DockPanel>
 </Window>
