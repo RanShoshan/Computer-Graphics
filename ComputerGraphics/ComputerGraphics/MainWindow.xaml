@@ -60,13 +60,13 @@
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnMirrorX" Click="OnMirrorBtnXClick" ToolTip="Mirror shape">
+                <ToggleButton x:Name="btnMirrorX" Click="OnMirrorBtnXClick" ToolTip="Mirror shape over the X axis">
                     <Image 
 						Source="pack://application:,,,/icons/mirror_x.png" 
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnMirrorY" Click="OnMirrorBtnYClick" ToolTip="Mirror shape">
+                <ToggleButton x:Name="btnMirrorY" Click="OnMirrorBtnYClick" ToolTip="Mirror shape over the Y axis">
                     <Image 
 						Source="pack://application:,,,/icons/mirror_y.png" 
 						Height="30" 

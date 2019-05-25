@@ -147,6 +147,10 @@ namespace ComputerGraphics {
         }
 
         private void MirrorShapes(MirrorDirection direction) {
+            state = UserState.MIRROR;
+            ToggleOffAllButtons(btnMirrorY);
+            Clear(false);
+
             centerPoint.X = myCanvas.ActualWidth / 2;
             centerPoint.Y = myCanvas.ActualHeight / 2;
             
@@ -159,6 +163,9 @@ namespace ComputerGraphics {
             foreach (Bezier bezier in parser.bezierList) {
                 bezier.Mirror(centerPoint, direction);
             }
+
+            DrawShapesFromFile(parser);
+
         }
 
 
@@ -564,20 +571,13 @@ namespace ComputerGraphics {
         }
 
         public void OnMirrorBtnXClick(object sender, RoutedEventArgs e) {
-            state = UserState.MIRROR;
-            ToggleOffAllButtons(btnMirrorX);
-            Clear(false);
             MirrorShapes(MirrorDirection.X);
-            DrawShapesFromFile(parser);
         }
 
         public void OnMirrorBtnYClick(object sender, RoutedEventArgs e) {
-            state = UserState.MIRROR;
-            ToggleOffAllButtons(btnMirrorY);
-            Clear(false);
             MirrorShapes(MirrorDirection.Y);
-            DrawShapesFromFile(parser);
         }
+
         
         //rotate shapes around center point
         private void RotateShapes(double angle) {
