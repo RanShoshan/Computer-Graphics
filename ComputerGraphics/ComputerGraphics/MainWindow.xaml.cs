@@ -186,8 +186,11 @@ namespace ComputerGraphics {
             apHelper.downPos = e.GetPosition(myCanvas);
         }
 
-        private void ScaleShapes() {
-            var scaleVal = 1.05;
+        private void ScaleShapes(double scaleVal = 0.0) {
+            var defaultScaleVal = 1.075;
+            if (scaleVal == 0.0) {
+                scaleVal = defaultScaleVal;
+            }
             foreach (MyLine line in parser.lineList)
                 line.Scale(scaleVal);
             foreach (Circle circle in parser.circleList)
@@ -195,7 +198,7 @@ namespace ComputerGraphics {
             foreach (Bezier b in parser.bezierList)
                 b.Scale(scaleVal);
             Clear(false);
-            //CenterShapes();
+            CenterShapes();
             DrawShapesFromFile(parser);
         }
 
@@ -524,7 +527,7 @@ namespace ComputerGraphics {
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
                 parser.ParseFile(currentWorkingFile);
-                DrawShapesFromFile(parser);
+                ScaleShapes(1);
             }
         }
 
