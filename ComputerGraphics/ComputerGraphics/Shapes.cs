@@ -15,6 +15,53 @@ namespace ComputerGraphics {
     class Shapes {
     }
 
+    class ShapesHelper {
+        internal static void MultPointBy(ref Point p, double val) {
+            p.X *= val;
+            p.Y *= val;
+        }
+
+        internal static double GetMinX(MyLine line) {
+            return Math.Min(line.pt2.X, line.pt1.X);
+        }
+
+        internal static double GetMinY(MyLine line) {
+            return Math.Min(line.pt2.Y, line.pt1.Y);
+        }
+
+        internal static double GetMaxY(MyLine line) {
+            return Math.Max(line.pt2.X, line.pt1.X);
+        }
+
+        internal static double GetMaxX(MyLine line) {
+            return Math.Max(line.pt2.Y, line.pt1.Y);
+        }
+
+        internal static double GetMinX(Bezier b) {
+            var val1 = Math.Min(b.cp1.X, b.cp2.X);
+            var val2 = Math.Min(b.cp3.X, b.cp4.X);
+            return Math.Min(val1, val2);
+        }
+
+        internal static double GetMinY(Bezier b) {
+            var val1 = Math.Min(b.cp1.Y, b.cp2.Y);
+            var val2 = Math.Min(b.cp3.Y, b.cp4.Y);
+            return Math.Min(val1, val2);
+        }
+
+        internal static double GetMaxY(Bezier b) {
+            var val1 = Math.Max(b.cp1.Y, b.cp2.Y);
+            var val2 = Math.Max(b.cp3.Y, b.cp4.Y);
+            return Math.Min(val1, val2);
+        }
+
+        internal static double GetMaxX(Bezier b) {
+            var val1 = Math.Max(b.cp1.X, b.cp2.X);
+            var val2 = Math.Max(b.cp3.X, b.cp4.X);
+            return Math.Min(val1, val2);
+        }
+    }
+
     public class Bezier {
         public static readonly string DEFAULT_SMOOTHING_RATE = "30";
         public Point cp1, cp2, cp3, cp4;
@@ -27,6 +74,13 @@ namespace ComputerGraphics {
             cp3 = new Point(Double.Parse(x3), Double.Parse(y3));
             cp4 = new Point(Double.Parse(x4), Double.Parse(y4));
 
+        }
+
+        internal void Scale(double val) {
+            ShapesHelper.MultPointBy(ref cp1, val);
+            ShapesHelper.MultPointBy(ref cp2, val);
+            ShapesHelper.MultPointBy(ref cp3, val);
+            ShapesHelper.MultPointBy(ref cp4, val);
         }
 
         internal void Move(double dx, double dy) {
@@ -93,7 +147,9 @@ namespace ComputerGraphics {
             pt2.Y += dy;
         }
 
-        internal void Rotate() {
+        internal void Scale(double val) {
+            ShapesHelper.MultPointBy(ref pt1, val);
+            ShapesHelper.MultPointBy(ref pt2, val);
         }
 
         internal void Mirror(Point centerPoint, MirrorDirection direction) {

@@ -186,6 +186,68 @@ namespace ComputerGraphics {
             apHelper.downPos = e.GetPosition(myCanvas);
         }
 
+        private void ScaleShapes() {
+            var scaleVal = 1.05;
+            foreach (MyLine line in parser.lineList)
+                line.Scale(scaleVal);
+            foreach (Circle circle in parser.circleList)
+                circle.Scale(scaleVal);
+            foreach (Bezier b in parser.bezierList)
+                b.Scale(scaleVal);
+            Clear(false);
+            //CenterShapes();
+            DrawShapesFromFile(parser);
+        }
+
+        private void CenterShapes() {
+            var midPoint = CalculateMiddlePoint(parser);
+            var centerXOffset = Math.Abs(midPoint.X - (Width / 2));
+            var centerYOffset = Math.Abs(midPoint.Y - (Height / 2));
+
+            if (midPoint.X > (Width / 2)) {
+                centerXOffset *= (-1);
+            }
+            if (midPoint.Y > (Height/ 2)) {
+                centerYOffset *= (-1);
+            }
+
+            MoveShapes(centerXOffset, centerYOffset);
+            Console.WriteLine("centerXOffset = " + centerXOffset);
+            Console.WriteLine("centerYOffset = " + centerYOffset);
+
+        }
+
+        private Point CalculateMiddlePoint(FileParserUtil parser) {
+            MyLine baseLine = parser.lineList[0];
+            Point topLeft = new Point(baseLine.pt1.X, baseLine.pt1.Y);
+            Point botRight = new Point(baseLine.pt1.X, baseLine.pt1.Y);
+            foreach (var line in parser.lineList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(line));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(line));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(line));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(line));
+            }
+            foreach (var circle in parser.circleList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(circle));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(circle));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(circle));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(circle));
+            }
+            foreach (var bezier in parser.bezierList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(bezier));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(bezier));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(bezier));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(bezier));
+            }
+
+            Console.WriteLine("topLeft = " + topLeft.X + "," + topLeft.Y);
+            Console.WriteLine("botRight = " + botRight.X + "," + botRight.Y);
+            
+            var midPoint = new Point(Math.Abs(botRight.X + topLeft.X) / 2, Math.Abs(botRight.Y + topLeft.Y) / 2);
+            Console.WriteLine("midPoint = " + midPoint.X + "," + midPoint.Y);
+            return midPoint;
+        }
+
         private void ScaleShapes(double dx, double dy) {
             int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
 
@@ -531,7 +593,8 @@ namespace ComputerGraphics {
         public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnScale);
             state = UserState.SCALE;
-            ShowAnchorPoint();
+            //ShowAnchorPoint();
+            ScaleShapes();
         }
 
         public void OnBtnStrechXClicked(object sender, RoutedEventArgs e) {
