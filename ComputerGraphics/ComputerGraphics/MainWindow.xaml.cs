@@ -67,8 +67,6 @@ namespace ComputerGraphics {
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
         private AnchorPointHelper apHelper = new AnchorPointHelper();
-        private int SCALE_UP = 1;
-        private int SCALE_DOWN = 0;
         Point centerPoint = new Point();
 
 
