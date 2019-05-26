@@ -69,7 +69,7 @@ namespace ComputerGraphics {
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         Point centerPoint = new Point();
 
-
+        //keep track of new shapes (points) added to the canvas
         public void WriteToTrackingFile(string str, string shapeKey) {
             string[] full_file = File.ReadAllLines(tempFilePath);
             List<string> lines = new List<string>();
@@ -102,6 +102,7 @@ namespace ComputerGraphics {
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
         }
 
+        //the anchor point btn is used to display the top right btn that is to be dragged on Transformation:
         private void InitAnchorPointBtn() {
             //anchorPointBtn.BorderBrush = Brushes.White;
             Canvas.SetLeft(anchorPointBtn, 0);
@@ -142,6 +143,7 @@ namespace ComputerGraphics {
             DrawShapesFromFile(parser);
         }
 
+        //Mirroring a shape on x or y axis:
         private void MirrorShapes(MirrorDirection direction) {
             state = UserState.MIRROR;
             ToggleOffAllButtons(direction == MirrorDirection .X ? btnMirrorX : btnMirrorY);
@@ -164,7 +166,7 @@ namespace ComputerGraphics {
 
         }
 
-
+        //Move shapes on the canvas:
         private void MoveShapes(double dx, double dy) {
             foreach (MyLine line in parser.lineList) {
                 line.Move(dx, dy);
@@ -182,6 +184,7 @@ namespace ComputerGraphics {
             apHelper.downPos = e.GetPosition(myCanvas);
         }
 
+        //Scaling algorithm - scaleup value = 1.075 for every click, scaledown value = 0.925:
         private void ScaleShapes(double scaleVal = 0.0) {
             var defaultScaleValUp = 1.075;
             var defaultScaleValDown = 0.925;
@@ -205,6 +208,9 @@ namespace ComputerGraphics {
             DrawShapesFromFile(parser);
         }
 
+        //Used to find top left and bottom right corners of all shapes, calculate their midpoint
+        //and add (or subtruct) its offset from the canvas middle X,Y position in order to center
+        //all shapes to the center of the canvas
         private void CenterShapes() {
             var midPoint = CalculateMiddlePoint(parser);
             var centerXOffset = Math.Abs(midPoint.X - (Width / 2));
@@ -223,6 +229,7 @@ namespace ComputerGraphics {
 
         }
 
+        //get the middle point of all shapes (as a "batch")
         private Point CalculateMiddlePoint(FileParserUtil parser) {
             MyLine baseLine = parser.lineList[0];
             Point topLeft = new Point(baseLine.pt1.X, baseLine.pt1.Y);
@@ -254,6 +261,7 @@ namespace ComputerGraphics {
             return midPoint;
         }
         
+        //Scaling logic - multiply by a constant
         private void MultPointsBy(ref Point p1, ref Point p2, double scaleValue) {
             p1.X *= scaleValue;
             p1.Y *= scaleValue;
@@ -265,6 +273,7 @@ namespace ComputerGraphics {
             Clear();
         }
 
+        //Clear canvas, free memory, reset state of buttons, clear temp tracking file
         public void Clear(bool clearCache = true, bool resetState = true) {
             if (resetState) {
                 state = UserState.NONE;
@@ -282,12 +291,14 @@ namespace ComputerGraphics {
             GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
         }
 
+        //Gui reattachments
         private void ReattachHelperButtons() {
             myCanvas.Children.Clear();
             ReattachAnchorPointBtn();
             ReattachHelpWindow();
         }
 
+        //Gui reattachments
         private void ReattachHelpWindow() {
             if (myCanvas.Children.Contains(helpWindow)) {
                 myCanvas.Children.Remove(helpWindow);
@@ -296,6 +307,7 @@ namespace ComputerGraphics {
             helpWindow.Text = MenuHelper.MENU_TEXT;
         }
 
+        //Gui reattachments
         private void ReattachAnchorPointBtn() {
             if (myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Remove(anchorPointBtn);
@@ -347,8 +359,6 @@ namespace ComputerGraphics {
             tbBezierNumOfLines.IsEnabled = true;
         }
 
-        private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
-
         public void DrawLine(MyLine line) {
             if (line != null)
                 DrawLine(line.pt1, line.pt2);
@@ -368,10 +378,12 @@ namespace ComputerGraphics {
             UpdateAnchorPoint(p2);
         }
 
+        //conversion function
         public string PointToString(Point p) {
             return p.X.ToString() + ',' + p.Y.ToString();
         }
 
+        //handle canvas events
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e) {
             Point p = e.GetPosition(myCanvas);
 
@@ -421,7 +433,6 @@ namespace ComputerGraphics {
                 default:
                     break;
             }
-            //UpdateAnchorPoint(p);
         }
 
         public void DrawBezierCurve(Bezier b, string smoothingRate) {
@@ -441,32 +452,8 @@ namespace ComputerGraphics {
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
-
-        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
-
-            if (updateAnchor) {
-                Point p = new Point(x, y);
-                UpdateAnchorPoint(p);
-            }
-            System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
-            rect.Stroke = color ?? Brushes.Blue;
-            if (style == PixelStyle.BOLD) {
-                rect.StrokeThickness = STROKE_BOLD;
-                rect.Width = STROKE_BOLD;
-                rect.Height = STROKE_BOLD;
-            }
-            else {
-                rect.StrokeThickness = 1;
-                rect.Width = 1;
-                rect.Height = 1;
-            }
-            Canvas.SetLeft(rect, x);
-            Canvas.SetTop(rect, y);
-            myCanvas.Children.Add(rect);
-            return true;
-
-        }
-
+        
+        //remove button toggles
         public void ToggleOffAllButtons(ToggleButton activeBtn = null, bool hideAnchor = true) {
 
             foreach (var item in mainToolbar.Items) {
@@ -503,6 +490,7 @@ namespace ComputerGraphics {
             }
         }
 
+        //draw all shapes from the current working file
         private void DrawShapesFromFile(FileParserUtil parser) {
             File.Delete(tempFilePath);
             CreatNewTxtFile();
@@ -583,6 +571,7 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
+        //update top right corner point of all shapes, used to calcualte position for our anchor button
         private void UpdateAnchorPoint(Point p) {
             anchorPoint.X = Math.Max(anchorPoint.X, p.X);
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
@@ -592,7 +581,6 @@ namespace ComputerGraphics {
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
-                //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
                 anchorPointBtn.Visibility = Visibility.Visible;
             }
             else {
@@ -653,12 +641,14 @@ namespace ComputerGraphics {
             }
         }
 
+        
         internal Point RotatePoint(Point pointToRotate, double angleInDegrees) {
             centerPoint.X = myCanvas.ActualWidth / 2;
             centerPoint.Y = myCanvas.ActualHeight / 2;
             return RotatePoint(pointToRotate, centerPoint, angleInDegrees);
         }
 
+        //Rotation algorithm for a single point according to angle input from GUI
         internal Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees) {
             double angleInRadians = angleInDegrees * (Math.PI / 180);
             double cosTheta = Math.Cos(angleInRadians);

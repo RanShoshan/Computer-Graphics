@@ -20,13 +20,15 @@ namespace ComputerGraphics {
         NONE
     }
 
+    //Parser util - reads shape values from configuration file and creates matching objects
     class FileParserUtil {
         
         public readonly List<Bezier> bezierList = new List<Bezier>();
         public readonly List<Circle> circleList = new List<Circle>();
         public readonly List<MyLine> lineList = new List<MyLine>();
         public static readonly char delimiter = ',';
-
+    
+        //Parse the file according to our format
         public void ParseFile(string fileName) {
 
             var shapeName = ShapeName.NONE;
@@ -42,6 +44,7 @@ namespace ComputerGraphics {
             }
         }
 
+        //Create and add new objects according to their matching shape type
         private void AddShapeToList(ShapeName shapeName, string[] vals) {
             switch (shapeName) {
                 case ShapeName.LINE:
@@ -85,6 +88,7 @@ namespace ComputerGraphics {
             return ShapeName.NONE;
         }
 
+        //Clear lists
         internal void ClearCache() {
             lineList.Clear();
             circleList.Clear();

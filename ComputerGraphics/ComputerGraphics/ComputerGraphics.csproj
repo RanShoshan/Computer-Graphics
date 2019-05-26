@@ -54,8 +54,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="CircleCalibrated.cs" />
-    <Compile Include="LineCalibrated.cs" />
     <Compile Include="MenuHelper.cs" />
     <Compile Include="Shapes.cs" />
     <Page Include="MainWindow.xaml">

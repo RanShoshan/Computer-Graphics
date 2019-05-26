@@ -21,6 +21,7 @@ namespace ComputerGraphics {
             p.Y *= val;
         }
 
+        //Helper functions to get min and max X or Y from all shapes:
         internal static double GetMinX(MyLine line) {
             return Math.Min(line.pt2.X, line.pt1.X);
         }
@@ -62,6 +63,7 @@ namespace ComputerGraphics {
         }
     }
 
+    //Bezier Curve representation
     public class Bezier {
         public static readonly string DEFAULT_SMOOTHING_RATE = "30";
         public Point cp1, cp2, cp3, cp4;
@@ -76,6 +78,7 @@ namespace ComputerGraphics {
 
         }
 
+        //Simple Scaling algorithm
         internal void Scale(double val) {
             ShapesHelper.MultPointBy(ref cp1, val);
             ShapesHelper.MultPointBy(ref cp2, val);
@@ -83,6 +86,7 @@ namespace ComputerGraphics {
             ShapesHelper.MultPointBy(ref cp4, val);
         }
 
+        //Transition algorithm
         internal void Move(double dx, double dy) {
             cp1.X += dx;
             cp2.X += dx;
@@ -95,6 +99,7 @@ namespace ComputerGraphics {
             cp4.Y += dy;
         }
 
+        //Mirroring algorithm accordign to direction (x or y)
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch (direction) {
                 case MirrorDirection.Y:
@@ -115,6 +120,7 @@ namespace ComputerGraphics {
 
     }
 
+    //Circle representation
     public class Circle : MyLine {
         public Circle(string centerX, string centerY, string endX, string endY) 
             : base(centerX, centerY, endX, endY) {}
@@ -123,6 +129,7 @@ namespace ComputerGraphics {
             : base(p1, p2) { }
     }
 
+    //Line representation
     public class MyLine {
         public Point pt1;
         public Point pt2;
@@ -140,6 +147,7 @@ namespace ComputerGraphics {
             pt2 = new Point(Double.Parse(x2), Double.Parse(y2));
         }
 
+        //Transition algorithm
         internal void Move(double dx, double dy) {
             pt1.X += dx;
             pt1.Y += dy;
@@ -147,11 +155,13 @@ namespace ComputerGraphics {
             pt2.Y += dy;
         }
 
+        //Simple Scaling algorithm
         internal void Scale(double val) {
             ShapesHelper.MultPointBy(ref pt1, val);
             ShapesHelper.MultPointBy(ref pt2, val);
         }
-
+        
+        //Mirroring algorithm accordign to direction (x or y)
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch(direction) {
                 case MirrorDirection.Y:
