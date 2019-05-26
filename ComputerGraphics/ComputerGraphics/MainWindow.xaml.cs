@@ -204,8 +204,8 @@ namespace ComputerGraphics {
             foreach (Bezier b in parser.bezierList)
                 b.Scale(scaleVal);
             Clear(false);
-            CenterShapes();
-            DrawShapesFromFile(parser);
+            //CenterShapes();
+            //DrawShapesFromFile(parser);
         }
 
         //Used to find top left and bottom right corners of all shapes, calculate their midpoint
@@ -487,6 +487,8 @@ namespace ComputerGraphics {
                 currentWorkingFile = ofd.FileName;
                 parser.ParseFile(currentWorkingFile);
                 ScaleShapes(1);
+                CenterShapes();
+                DrawShapesFromFile(parser);
             }
         }
 
@@ -545,12 +547,14 @@ namespace ComputerGraphics {
             ToggleOffAllButtons();
             state = UserState.SCALE_UP;
             ScaleShapes();
+            DrawShapesFromFile(parser);
         }
 
         public void OnBtnScaleDownClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons();
             state = UserState.SCALE_DOWN;
             ScaleShapes();
+            DrawShapesFromFile(parser);
         }
 
         public void OnBtnStrechXClicked(object sender, RoutedEventArgs e) {
