@@ -426,21 +426,17 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier, tbBezierNumOfLines.Text);
                     WriteToTrackingFile(
                         PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim +
@@ -459,8 +455,6 @@ namespace ComputerGraphics {
             var bezierPoints = new List<Point>();
             double smoothingrate = 1.0 / Convert.ToDouble(smoothingRate);
 
-            RemoveBezierGuidePoints(b);
-
             for (double t = 0.0; t <= 1.0; t = t + smoothingrate) {
                 var put_x = Math.Pow(1 - t, 3) * b.cp1.X + 3 * t * Math.Pow(1 - t, 2) * b.cp2.X + 3 * t * t * (1 - t) * b.cp3.X + Math.Pow(t, 3) * b.cp4.X; // Formula to draw curve
                 var put_y = Math.Pow(1 - t, 3) * b.cp1.Y + 3 * t * Math.Pow(1 - t, 2) * b.cp2.Y + 3 * t * t * (1 - t) * b.cp3.Y + Math.Pow(t, 3) * b.cp4.Y;
@@ -471,13 +465,6 @@ namespace ComputerGraphics {
                 DrawLine(bezierPoints[i], bezierPoints[i + 1]);
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
-        }
-
-        private void RemoveBezierGuidePoints(Bezier b) {
-            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White, false);
         }
 
         private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
