@@ -274,13 +274,11 @@ namespace ComputerGraphics {
             ToggleOffAllButtons(null, resetState);
             ReattachHelperButtons();
 
-            //REMOVE AND ATTACH MIRROR BTN HERE
             if (clearCache) {
                 parser.ClearCache();
                 File.Delete(tempFilePath);
                 CreatNewTxtFile();
             }
-
 
             anchorPoint.X = anchorPoint.Y = 0;
             GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
