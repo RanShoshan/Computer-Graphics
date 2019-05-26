@@ -31,7 +31,8 @@ namespace ComputerGraphics {
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
         BTN_BEZIER_4TH_CLICK,
-        SCALE,
+        SCALE_UP,
+        SCALE_DOWN,
         STRECH,
         ROTATE,
         MOVE,
@@ -130,9 +131,6 @@ namespace ComputerGraphics {
             parser.ParseFile(tempFilePath);
 
             switch (currState) {
-                case UserState.SCALE:
-                    ScaleShapes(dx, dy);
-                    break;
                 case UserState.STRECH:
                     break;
                 case UserState.ROTATE:
@@ -184,6 +182,78 @@ namespace ComputerGraphics {
         private void OnAnchorPointBtnMouseDown(object s, MouseButtonEventArgs e) {
             Console.WriteLine("OnAnchorPointBtnMouseDown: " + e.GetPosition(myCanvas));
             apHelper.downPos = e.GetPosition(myCanvas);
+        }
+
+        private void ScaleShapes(double scaleVal = 0.0) {
+            var defaultScaleValUp = 1.075;
+            var defaultScaleValDown = 0.925;
+
+            if (scaleVal == 0.0) {
+                scaleVal = defaultScaleValUp;
+            }
+
+            if (state == UserState.SCALE_DOWN) {
+                scaleVal = defaultScaleValDown;
+            }
+
+            foreach (MyLine line in parser.lineList)
+                line.Scale(scaleVal);
+            foreach (Circle circle in parser.circleList)
+                circle.Scale(scaleVal);
+            foreach (Bezier b in parser.bezierList)
+                b.Scale(scaleVal);
+            Clear(false);
+            CenterShapes();
+            DrawShapesFromFile(parser);
+        }
+
+        private void CenterShapes() {
+            var midPoint = CalculateMiddlePoint(parser);
+            var centerXOffset = Math.Abs(midPoint.X - (Width / 2));
+            var centerYOffset = Math.Abs(midPoint.Y - (Height / 2));
+
+            if (midPoint.X > (Width / 2)) {
+                centerXOffset *= (-1);
+            }
+            if (midPoint.Y > (Height/ 2)) {
+                centerYOffset *= (-1);
+            }
+
+            MoveShapes(centerXOffset, centerYOffset);
+            Console.WriteLine("centerXOffset = " + centerXOffset);
+            Console.WriteLine("centerYOffset = " + centerYOffset);
+
+        }
+
+        private Point CalculateMiddlePoint(FileParserUtil parser) {
+            MyLine baseLine = parser.lineList[0];
+            Point topLeft = new Point(baseLine.pt1.X, baseLine.pt1.Y);
+            Point botRight = new Point(baseLine.pt1.X, baseLine.pt1.Y);
+            foreach (var line in parser.lineList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(line));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(line));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(line));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(line));
+            }
+            foreach (var circle in parser.circleList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(circle));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(circle));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(circle));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(circle));
+            }
+            foreach (var bezier in parser.bezierList) {
+                topLeft.X = Math.Min(topLeft.X, ShapesHelper.GetMinX(bezier));
+                topLeft.Y = Math.Min(topLeft.Y, ShapesHelper.GetMinY(bezier));
+                botRight.X = Math.Max(botRight.X, ShapesHelper.GetMaxX(bezier));
+                botRight.Y = Math.Max(botRight.Y, ShapesHelper.GetMaxY(bezier));
+            }
+
+            Console.WriteLine("topLeft = " + topLeft.X + "," + topLeft.Y);
+            Console.WriteLine("botRight = " + botRight.X + "," + botRight.Y);
+            
+            var midPoint = new Point(Math.Abs(botRight.X + topLeft.X) / 2, Math.Abs(botRight.Y + topLeft.Y) / 2);
+            Console.WriteLine("midPoint = " + midPoint.X + "," + midPoint.Y);
+            return midPoint;
         }
 
         private void ScaleShapes(double dx, double dy) {
@@ -257,6 +327,15 @@ namespace ComputerGraphics {
         private void ReattachHelperButtons() {
             myCanvas.Children.Clear();
             ReattachAnchorPointBtn();
+            ReattachHelpWindow();
+        }
+
+        private void ReattachHelpWindow() {
+            if (myCanvas.Children.Contains(helpWindow)) {
+                myCanvas.Children.Remove(helpWindow);
+            }
+            myCanvas.Children.Add(helpWindow);
+            helpWindow.Text = MenuHelper.MENU_TEXT;
         }
 
         private void ReattachAnchorPointBtn() {
@@ -364,21 +443,17 @@ namespace ComputerGraphics {
                 case UserState.BTN_BEZIER_1ST_CLICK:
                     state = UserState.BTN_BEZIER_2ND_CLICK;
                     bezier.cp1 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp1.X), Convert.ToInt32(bezier.cp1.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_2ND_CLICK:
                     state = UserState.BTN_BEZIER_3RD_CLICK;
                     bezier.cp2 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp2.X), Convert.ToInt32(bezier.cp2.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_3RD_CLICK:
                     state = UserState.BTN_BEZIER_4TH_CLICK;
                     bezier.cp3 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp3.X), Convert.ToInt32(bezier.cp3.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     break;
                 case UserState.BTN_BEZIER_4TH_CLICK:
                     bezier.cp4 = p;
-                    //SetPixel(Convert.ToInt32(bezier.cp4.X), Convert.ToInt32(bezier.cp4.Y), PixelStyle.BOLD, Brushes.Aqua, false);
                     DrawBezierCurve(bezier, tbBezierNumOfLines.Text);
                     WriteToTrackingFile(
                         PointToString(bezier.cp1) + delim + PointToString(bezier.cp2) + delim +
@@ -397,8 +472,6 @@ namespace ComputerGraphics {
             var bezierPoints = new List<Point>();
             double smoothingrate = 1.0 / Convert.ToDouble(smoothingRate);
 
-            RemoveBezierGuidePoints(b);
-
             for (double t = 0.0; t <= 1.0; t = t + smoothingrate) {
                 var put_x = Math.Pow(1 - t, 3) * b.cp1.X + 3 * t * Math.Pow(1 - t, 2) * b.cp2.X + 3 * t * t * (1 - t) * b.cp3.X + Math.Pow(t, 3) * b.cp4.X; // Formula to draw curve
                 var put_y = Math.Pow(1 - t, 3) * b.cp1.Y + 3 * t * Math.Pow(1 - t, 2) * b.cp2.Y + 3 * t * t * (1 - t) * b.cp3.Y + Math.Pow(t, 3) * b.cp4.Y;
@@ -409,13 +482,6 @@ namespace ComputerGraphics {
                 DrawLine(bezierPoints[i], bezierPoints[i + 1]);
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
-        }
-
-        private void RemoveBezierGuidePoints(Bezier b) {
-            SetPixel(Convert.ToInt32(b.cp1.X), Convert.ToInt32(b.cp1.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp2.X), Convert.ToInt32(b.cp2.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp3.X), Convert.ToInt32(b.cp3.Y), PixelStyle.BOLD, Brushes.White, false);
-            SetPixel(Convert.ToInt32(b.cp4.X), Convert.ToInt32(b.cp4.Y), PixelStyle.BOLD, Brushes.White, false);
         }
 
         private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
@@ -475,7 +541,7 @@ namespace ComputerGraphics {
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
                 parser.ParseFile(currentWorkingFile);
-                DrawShapesFromFile(parser);
+                ScaleShapes(1);
             }
         }
 
@@ -528,10 +594,17 @@ namespace ComputerGraphics {
                 File.Copy(tempFilePath, currentWorkingFile);
             }
         }
-        public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnScale);
-            state = UserState.SCALE;
-            ShowAnchorPoint();
+
+        public void OnBtnScaleUpClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons();
+            state = UserState.SCALE_UP;
+            ScaleShapes();
+        }
+
+        public void OnBtnScaleDownClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons();
+            state = UserState.SCALE_DOWN;
+            ScaleShapes();
         }
 
         public void OnBtnStrechXClicked(object sender, RoutedEventArgs e) {
@@ -585,7 +658,7 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
-            
+            helpWindow.Visibility = helpWindow.IsVisible ? Visibility.Hidden : Visibility.Visible;
         }
 
         
