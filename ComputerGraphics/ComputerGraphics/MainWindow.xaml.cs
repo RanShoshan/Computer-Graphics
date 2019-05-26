@@ -327,6 +327,15 @@ namespace ComputerGraphics {
         private void ReattachHelperButtons() {
             myCanvas.Children.Clear();
             ReattachAnchorPointBtn();
+            ReattachHelpWindow();
+        }
+
+        private void ReattachHelpWindow() {
+            if (myCanvas.Children.Contains(helpWindow)) {
+                myCanvas.Children.Remove(helpWindow);
+            }
+            myCanvas.Children.Add(helpWindow);
+            helpWindow.Text = MenuHelper.MENU_TEXT;
         }
 
         private void ReattachAnchorPointBtn() {
@@ -649,7 +658,7 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
-            
+            helpWindow.Visibility = helpWindow.IsVisible ? Visibility.Hidden : Visibility.Visible;
         }
 
         

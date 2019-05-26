@@ -110,6 +110,18 @@
                         PreviewMouseUp="OnAnchorPointBtnMouseUp" 
                         PreviewMouseMove="OnAnchorPointBtnDrag"
                         Visibility="Hidden"/>
+            <TextBlock  
+                       x:Name="helpWindow"
+                       Background="Beige" 
+                       FontSize="10pt" FontFamily="Arial"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Width="550" 
+                       Height="600" 
+                       Visibility="Hidden"
+                       Canvas.Left="0" 
+                       Canvas.Top="20"
+                />
         </Canvas>
     </DockPanel>
 </Window>
