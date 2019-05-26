@@ -31,7 +31,8 @@ namespace ComputerGraphics {
         BTN_BEZIER_2ND_CLICK,
         BTN_BEZIER_3RD_CLICK,
         BTN_BEZIER_4TH_CLICK,
-        SCALE,
+        SCALE_UP,
+        SCALE_DOWN,
         STRECH,
         ROTATE,
         MOVE,
@@ -130,9 +131,6 @@ namespace ComputerGraphics {
             parser.ParseFile(tempFilePath);
 
             switch (currState) {
-                case UserState.SCALE:
-                    ScaleShapes(dx, dy);
-                    break;
                 case UserState.STRECH:
                     break;
                 case UserState.ROTATE:
@@ -187,10 +185,17 @@ namespace ComputerGraphics {
         }
 
         private void ScaleShapes(double scaleVal = 0.0) {
-            var defaultScaleVal = 1.075;
+            var defaultScaleValUp = 1.075;
+            var defaultScaleValDown = 0.925;
+
             if (scaleVal == 0.0) {
-                scaleVal = defaultScaleVal;
+                scaleVal = defaultScaleValUp;
             }
+
+            if (state == UserState.SCALE_DOWN) {
+                scaleVal = defaultScaleValDown;
+            }
+
             foreach (MyLine line in parser.lineList)
                 line.Scale(scaleVal);
             foreach (Circle circle in parser.circleList)
@@ -580,10 +585,16 @@ namespace ComputerGraphics {
                 File.Copy(tempFilePath, currentWorkingFile);
             }
         }
-        public void OnBtnScaleClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnScale);
-            state = UserState.SCALE;
-            //ShowAnchorPoint();
+
+        public void OnBtnScaleUpClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons();
+            state = UserState.SCALE_UP;
+            ScaleShapes();
+        }
+
+        public void OnBtnScaleDownClicked(object sender, RoutedEventArgs e) {
+            ToggleOffAllButtons();
+            state = UserState.SCALE_DOWN;
             ScaleShapes();
         }
 

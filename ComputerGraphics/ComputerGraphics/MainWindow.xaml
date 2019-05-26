@@ -53,9 +53,15 @@
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
-                <ToggleButton x:Name="btnScale" Click="OnBtnScaleClicked" ToolTip="Scale shapes up or down">
+                <ToggleButton x:Name="btnScaleUp" Click="OnBtnScaleUpClicked" ToolTip="Scale shapes up">
                     <Image 
-						Source="pack://application:,,,/icons/scale.png" 
+						Source="pack://application:,,,/icons/scale_up.png" 
+						Height="30" 
+						Width="30"/>
+                </ToggleButton>
+                <ToggleButton x:Name="btnScaleDown" Click="OnBtnScaleDownClicked" ToolTip="Scale shapes down">
+                    <Image 
+						Source="pack://application:,,,/icons/scale_down.png" 
 						Height="30" 
 						Width="30"/>
                 </ToggleButton>
