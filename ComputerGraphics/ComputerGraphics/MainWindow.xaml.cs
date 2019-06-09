@@ -48,6 +48,12 @@ namespace ComputerGraphics {
         BOLD
     }
 
+    public enum ProjectionType {
+        PARALLEL,
+        OBLIQUE,
+        PERSPECTIVE
+    }
+
     public class AnchorPointHelper {
         public Point downPos = new Point(0.0, 0.0);
         public Point upPos = new Point(0.0, 0.0);
@@ -86,9 +92,8 @@ namespace ComputerGraphics {
         }
 
         public void CreatNewTxtFile() {
-            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.VERTEX.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.POLYGON.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
         public MainWindow() {
@@ -320,14 +325,6 @@ namespace ComputerGraphics {
             state = UserState.BTN_CIRCLE_1ST_CLICK;
         }
 
-        public void OnBtnBrushClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnBrush);
-        }
-
-        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnPaintcan);
-        }
-
         public void DrawCircle(Circle obj) {
             DrawCircle(obj.pt1, obj.pt2);
         }
@@ -365,6 +362,7 @@ namespace ComputerGraphics {
         }
 
         public void DrawLine(Point p1, Point p2) {
+            
             var line = new Line {
                 Stroke = Brushes.Blue,
                 X1 = p1.X,
@@ -486,20 +484,54 @@ namespace ComputerGraphics {
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
                 parser.ParseFile(currentWorkingFile);
-                ScaleShapes(1);
-                CenterShapes();
+                //ScaleShapes(1);
+                //CenterShapes();
                 DrawShapesFromFile(parser);
+                DrawProjection();
             }
+        }
+
+        private void DrawProjection() {
+            //get the projection type from the gui radio buttons
+            var type = ProjectionType.PARALLEL;
+
+            switch (type) {
+                case ProjectionType.PARALLEL:
+                    DrawParallel();
+                    break;
+                case ProjectionType.OBLIQUE:
+                    DrawOblique();
+                    break;
+                case ProjectionType.PERSPECTIVE:
+                    DrawPerspective();
+                    break;
+
+            }
+        }
+
+        private void DrawPerspective() {
+            
+        }
+
+        private void DrawOblique() {
+            
+        }
+
+        private void DrawParallel() {
+            
         }
 
         //draw all shapes from the current working file
         private void DrawShapesFromFile(FileParserUtil parser) {
             File.Delete(tempFilePath);
             CreatNewTxtFile();
+            DrawPolygons(parser.polygonList);
+        }
 
-            DrawLines(parser.lineList);
-            DrawCircles(parser.circleList);
-            DrawBezierCurves(parser.bezierList);
+        private void DrawPolygons(List<MyPolygon> polygonList) {
+            foreach (var polygon in polygonList) {
+                myCanvas.Children.Add(polygon.poly);
+            }
         }
 
         private void DrawBezierCurves(List<Bezier> bezierList) {
@@ -542,6 +574,28 @@ namespace ComputerGraphics {
                 File.Copy(tempFilePath, currentWorkingFile);
             }
         }
+
+
+        public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
+
+        }
+        
+        public void OnBtnApplyTransformationClicked(object sender, RoutedEventArgs e) {
+
+        }
+
+        public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+            
+        }
+
+        private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            var MAX_DIGITS_AFTER_F_POINT = 6;
+            var slider = sender as Slider;
+            double value = Math.Round(slider.Value, MAX_DIGITS_AFTER_F_POINT);
+            // ... Set Window Title.
+            RotationValueTb.Text = value.ToString();
+        }
+
 
         public void OnBtnScaleUpClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons();
