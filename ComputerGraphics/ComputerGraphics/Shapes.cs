@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
 
 namespace ComputerGraphics {
     class Shapes {
@@ -118,6 +120,16 @@ namespace ComputerGraphics {
 
         }
 
+    }
+
+    public class MyPolygon {
+        public Polygon poly;
+        public List<Point3D> vertexes = new List<Point3D>();
+
+        public MyPolygon(Polygon poly, List<Point3D> vertexes) {
+            this.poly = poly;
+            this.vertexes = vertexes;
+        }
     }
 
     //Circle representation
