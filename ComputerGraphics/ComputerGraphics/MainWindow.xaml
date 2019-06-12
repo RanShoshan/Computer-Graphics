@@ -21,7 +21,7 @@
 
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
-                
+
                 <StackPanel x:Name="ProjectionRadioGrp">
                     <Label Content="Projection View" FontSize="20"/>
                     <StackPanel x:Name="ProjectionRadioGrpPanel" HorizontalAlignment="Center">
@@ -33,12 +33,12 @@
 
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
-                
-                
+
+
                 <StackPanel x:Name="RotationAngleGrp">
                     <Label Content="Rotation" FontSize="20" HorizontalAlignment="Center"/>
-                    <Slider x:Name="RotationSlider" Minimum="-360" Maximum="360" Value="0" ValueChanged="OnRotationSliderValueChanged"/>
-                    <TextBox x:Name="RotationValueTb" Text="0"/>
+                    <Slider x:Name="RotationSlider" Minimum="-360" Maximum="360" Value="0" ValueChanged="OnRotationSliderValueChanged" IsSnapToTickEnabled="True"/>
+                    <TextBox x:Name="RotationValueTb" Text="0" TextChanged="OnRotationValueInputTextChanged"/>
                     <StackPanel x:Name="RotationAngleGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
                         <RadioButton GroupName="RotationAngleGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left"/>
                         <RadioButton GroupName="RotationAngleGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>
@@ -49,7 +49,7 @@
 
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
-                
+
                 <StackPanel x:Name="TransformationGrp">
                     <Label Content="Trasnformation" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
@@ -61,10 +61,10 @@
                     </StackPanel>
                     <Button x:Name="BtnApplyTransformation" Content="Apply" Click="OnBtnApplyTransformationClicked"/>
                 </StackPanel>
-                
+
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
-                
+
                 <StackPanel>
                     <Label Content="Scaling" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
@@ -75,7 +75,18 @@
 
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
-                
+
+                <Border x:Name="UserNotificationBorder" BorderThickness="1" BorderBrush="Black" Visibility="Hidden">
+                    <TextBlock 
+                    x:Name="UserNotification" 
+                    Padding="6,6,6,6"
+                    FontSize="25" 
+                    FontFamily="Bold" 
+                    Foreground="Red" 
+                    Margin="0,30,0,0"
+                    TextAlignment="Center"/>
+                </Border>
+
                 <ToggleButton  x:Name="btnLine" Click="OnBtnLineClicked" Visibility="Hidden">
                     <Image 
 						Source="pack://application:,,,/icons/line.png" 

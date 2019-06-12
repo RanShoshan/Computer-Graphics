@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -577,7 +578,9 @@ namespace ComputerGraphics {
 
 
         public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
-
+            
+            foreach (RadioButton radioBtn in RotationAngleGrp.Children) {
+            }
         }
         
         public void OnBtnApplyTransformationClicked(object sender, RoutedEventArgs e) {
@@ -589,13 +592,80 @@ namespace ComputerGraphics {
         }
 
         private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            var MAX_DIGITS_AFTER_F_POINT = 6;
             var slider = sender as Slider;
-            double value = Math.Round(slider.Value, MAX_DIGITS_AFTER_F_POINT);
+            //double value = Math.Round(slider.Value, MAX_DIGITS_AFTER_F_POINT);
+
             // ... Set Window Title.
-            RotationValueTb.Text = value.ToString();
+            RotationValueTb.Text = slider.Value.ToString();
         }
 
+        private void OnRotationValueInputTextChanged(object sender, TextChangedEventArgs args) {
+            var MAX_ANGLE_DIGITS = 3;
+            var textBox = sender as TextBox;
+            var illegalInputMsg = "Input should only contain \nnumbers between -360 and 360!";
+            Double angleValue = 0.0;
+
+            Regex negRgx = new Regex(@"^-[0-9]+$");
+            Regex posRgx = new Regex(@"^[0-9]+$");
+            
+            Match negMatch = negRgx.Match(RotationValueTb.Text);
+            Match posMatch = posRgx.Match(RotationValueTb.Text);
+
+            DisplayIllegalValueNotificiation(null, false);
+
+            if (textBox.Text.Contains("-")) {
+                MAX_ANGLE_DIGITS++;
+            }
+            if (textBox.Text.Length > MAX_ANGLE_DIGITS) {
+                textBox.Text = textBox.Text.Substring(0, MAX_ANGLE_DIGITS);
+                return;
+            }
+
+            //negative angle
+            if (negMatch.Success) {
+                Console.WriteLine("negMatch.");
+                angleValue = Double.Parse(RotationValueTb.Text.Replace("-", ""));
+                if (isInValidRange(angleValue)) {
+                    RotationSlider.Value = angleValue * -1;
+                }
+                else {
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                    textBox.Text = "";
+                }
+            }
+            //positive angle
+            else if (posMatch.Success) {
+                Console.WriteLine("posMatch.");
+                angleValue = Double.Parse(RotationValueTb.Text);
+                if (isInValidRange(angleValue)) {
+                    RotationSlider.Value = angleValue;
+                }
+                else {
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                    textBox.Text = "";
+                }
+            }
+            //illegal input
+            else {
+                if (textBox.Text != "-") {
+                    Console.WriteLine("illegal input");
+                    textBox.Text = "";
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                }
+            }
+            return;
+        }
+
+        private void DisplayIllegalValueNotificiation(string msg = "", bool display = true) {
+            if (UserNotificationBorder != null && UserNotification != null) {
+                UserNotificationBorder.Visibility = display ? Visibility.Visible : Visibility.Hidden;
+                UserNotification.Text = display ? msg : "";
+            }
+        }
+
+        private bool isInValidRange(double angleValue) {
+            return angleValue >= 0 && angleValue <= 360;
+        }
 
         public void OnBtnScaleUpClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons();
@@ -719,5 +789,8 @@ namespace ComputerGraphics {
             };
         }
 
+        private void RotationValueTb_TextChanged(object sender, TextChangedEventArgs e) {
+
+        }
     }
 }
