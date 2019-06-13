@@ -485,8 +485,6 @@ namespace ComputerGraphics {
             if (result == true) {
                 currentWorkingFile = ofd.FileName;
                 parser.ParseFile(currentWorkingFile);
-                //ScaleShapes(1);
-                //CenterShapes();
                 DrawShapesFromFile(parser);
                 DrawProjection();
             }
@@ -531,7 +529,21 @@ namespace ComputerGraphics {
 
         private void DrawPolygons(List<MyPolygon> polygonList) {
             foreach (var polygon in polygonList) {
-                myCanvas.Children.Add(polygon.poly);
+                var newPoly = new Polygon {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1,
+                    Points = new PointCollection()
+                };
+
+                //create new point collection with calculated offset before drawing on canvas:
+                for(int i=0; i < polygon.poly.Points.Count ; i++) {
+                    newPoly.Points.Add(new Point(
+                        polygon.poly.Points[i].X + Width / 2,
+                        polygon.poly.Points[i].Y + Height/ 2
+                        ));
+                }
+
+                myCanvas.Children.Add(newPoly);
             }
         }
 
@@ -599,6 +611,7 @@ namespace ComputerGraphics {
             RotationValueTb.Text = slider.Value.ToString();
         }
 
+        //validate legal angle value on input entered
         private void OnRotationValueInputTextChanged(object sender, TextChangedEventArgs args) {
             var MAX_ANGLE_DIGITS = 3;
             var textBox = sender as TextBox;
