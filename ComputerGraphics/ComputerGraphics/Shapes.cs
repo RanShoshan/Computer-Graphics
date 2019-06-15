@@ -19,6 +19,7 @@ namespace ComputerGraphics {
     }
 
     public static class ShapesHelper {
+
         internal static void MultPointBy(ref Point p, double val) {
             p.X *= val;
             p.Y *= val;
@@ -148,17 +149,44 @@ namespace ComputerGraphics {
         }
 
         internal void Scale(double scaleValue) {
-
             var newVertextes = new List<Point3D>();
-
             foreach (var vertex in vertexes) {
                 newVertextes.Add(Transformations.Scale(vertex, scaleValue));
             }
-
             vertexes = newVertextes;
             poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
 
         }
+
+        internal void Rotate(Axis axis, double angle) {
+            var newVertextes = new List<Point3D>();
+            foreach (var vertex in vertexes) {
+                newVertextes.Add(Transformations.Rotate(vertex, axis, angle));
+            }
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+        }
+
+        internal void PerformProjection(ProjectionType type) {
+            var newVertextes = new List<Point3D>();
+
+            foreach (var vertex in vertexes) {
+                switch (type) {
+                    default:
+                    case ProjectionType.ORTHOGRAPHIC:
+                        newVertextes.Add(Transformations.Orthographic(vertex));
+                        break;
+                    case ProjectionType.OBLIQUE:
+                        break;
+                    case ProjectionType.PERSPECTIVE:
+                        break;
+                }
+            }
+
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+        }
+
     }
 
     //Circle representation

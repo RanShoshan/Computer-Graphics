@@ -45,13 +45,18 @@ namespace ComputerGraphics {
         X,
         Y
     }
+
+    public enum Axis {
+        X,Y,Z
+    }
+
     public enum PixelStyle {
         DEFAULT = 0,
         BOLD
     }
 
     public enum ProjectionType {
-        PARALLEL,
+        ORTHOGRAPHIC,
         OBLIQUE,
         PERSPECTIVE
     }
@@ -76,8 +81,7 @@ namespace ComputerGraphics {
         private readonly char delim = FileParserUtil.delimiter;
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         Point centerPoint = new Point();
-        private Point3D shapesMiddlePt = new Point3D(100, -100, -50);
-        private static readonly string CONFIG_FILENAME = "..\\..\\config6.txt";
+        private static readonly string CONFIG_FILENAME = "..\\..\\config7.txt";
 
         //keep track of new shapes (points) added to the canvas
         public void WriteToTrackingFile(string str, string shapeKey) {
@@ -109,8 +113,13 @@ namespace ComputerGraphics {
 
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
+            PublishOffset();
 
             LoadFile(CONFIG_FILENAME);
+        }
+
+        private void PublishOffset() {
+            Transformations.screen = new Point(Width, Height);
         }
 
         //the anchor point btn is used to display the top right btn that is to be dragged on Transformation:
@@ -497,15 +506,17 @@ namespace ComputerGraphics {
             parser.ParseFile(currentWorkingFile);
             DrawPolygons(parser.polygonList);
             DrawShapesFromFile(parser);
+            //DrawProjection();
         }
 
         private void DrawProjection() {
+
             //get the projection type from the gui radio buttons
-            var type = ProjectionType.PARALLEL;
+            var type = GetProjectionType();
 
             switch (type) {
-                case ProjectionType.PARALLEL:
-                    DrawParallel();
+                case ProjectionType.ORTHOGRAPHIC:
+                    DrawOrthographic();
                     break;
                 case ProjectionType.OBLIQUE:
                     DrawOblique();
@@ -517,6 +528,23 @@ namespace ComputerGraphics {
             }
         }
 
+        private ProjectionType GetProjectionType() {
+            foreach(RadioButton type in ProjectionRadioGrpPanel.Children) {
+                if(type.IsChecked == true) {
+                    if(type.Content.ToString() == "Orthographic") {
+                        return ProjectionType.ORTHOGRAPHIC;
+                    }
+                    if (type.Content.ToString() == "Oblique") {
+                        return ProjectionType.OBLIQUE;
+                    }
+                    else { 
+                        return ProjectionType.PERSPECTIVE;
+                    }
+                }
+            }
+            return ProjectionType.ORTHOGRAPHIC;
+        }
+
         private void DrawPerspective() {
             
         }
@@ -525,8 +553,15 @@ namespace ComputerGraphics {
             
         }
 
-        private void DrawParallel() {
-            
+        private void DrawOrthographic() {
+            //clear canvas
+            Clear(false);
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].PerformProjection(ProjectionType.ORTHOGRAPHIC);
+            }
+
+            DrawPolygons(parser.polygonList);
         }
 
         //draw all shapes from the current working file
@@ -601,10 +636,39 @@ namespace ComputerGraphics {
 
         public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
             
-            foreach (RadioButton radioBtn in RotationAngleGrp.Children) {
+            //clear canvas
+            Clear(false);
+
+            var axis = Axis.X;
+            var angle = Double.Parse(RotationValueTb.Text);
+
+            foreach (RadioButton radioBtn in RotationAngleGrpPanel.Children) {
+                if (radioBtn.IsChecked == true) {
+                    axis = GetAxis(radioBtn);
+                    break;
+                }
+            }
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].Rotate(axis, angle);
+            }
+
+            DrawPolygons(parser.polygonList);
+
+        }
+
+        private Axis GetAxis(RadioButton radioBtn) {
+            if (radioBtn.Content.ToString() == "X") {
+                return Axis.X;
+            }
+            else if (radioBtn.Content.ToString() == "Y") {
+                return Axis.Y;
+            }
+            else {
+                return Axis.Z;
             }
         }
-        
+
         public void OnBtnApplyTransitionClicked(object sender, RoutedEventArgs e) {
 
         }
@@ -620,10 +684,22 @@ namespace ComputerGraphics {
                 parser.polygonList[i].Scale(scaleValue);
             }
 
-            DrawPolygons(parser.polygonList);
-            
+            if (ShapesOutOfBordersAfterScaling()) {
+                ScaleShapesBackToRecentSize();
+            }
 
+            DrawPolygons(parser.polygonList);
         }
+
+        private bool ShapesOutOfBordersAfterScaling() {
+            //todo: validate vertex are in canvas border
+            return false;
+        }
+
+        private void ScaleShapesBackToRecentSize() {
+            //todo: scale back to recent dims if needed
+        }
+
 
         private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             var slider = sender as Slider;
@@ -824,8 +900,12 @@ namespace ComputerGraphics {
             };
         }
 
-        private void RotationValueTb_TextChanged(object sender, TextChangedEventArgs e) {
-
+        private void OnProjectionChanged(object sender, RoutedEventArgs e) {
+            Console.WriteLine("OnProjectionChanged");
+            if(myCanvas != null) {
+                DrawProjection();
+            }
         }
+
     }
 }

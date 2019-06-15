@@ -25,9 +25,15 @@
                 <StackPanel x:Name="ProjectionRadioGrp">
                     <Label Content="Projection View" FontSize="20"/>
                     <StackPanel x:Name="ProjectionRadioGrpPanel" HorizontalAlignment="Center">
-                        <RadioButton GroupName="Projection" Content="Parallel" IsChecked="True" HorizontalAlignment="Left"/>
-                        <RadioButton GroupName="Projection" Content="Oblique" IsChecked="False" HorizontalAlignment="Left"/>
-                        <RadioButton GroupName="Projection" Content="Perspective" IsChecked="False" HorizontalAlignment="Left"/>
+                        <RadioButton GroupName="Projection" Content="Orthographic" IsChecked="True" 
+                                     HorizontalAlignment="Left"
+                                     Checked="OnProjectionChanged"/>
+                        <RadioButton GroupName="Projection" Content="Oblique" IsChecked="False" 
+                                     HorizontalAlignment="Left"
+                                     Checked="OnProjectionChanged"/>
+                        <RadioButton GroupName="Projection" Content="Perspective" IsChecked="False" 
+                                     HorizontalAlignment="Left"
+                                     Checked="OnProjectionChanged"/>
                     </StackPanel>
                 </StackPanel>
 
