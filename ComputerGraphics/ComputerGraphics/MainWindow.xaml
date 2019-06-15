@@ -40,7 +40,7 @@
                     <Slider x:Name="RotationSlider" Minimum="-360" Maximum="360" Value="0" ValueChanged="OnRotationSliderValueChanged" IsSnapToTickEnabled="True"/>
                     <TextBox x:Name="RotationValueTb" Text="0" TextChanged="OnRotationValueInputTextChanged"/>
                     <StackPanel x:Name="RotationAngleGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                        <RadioButton GroupName="RotationAngleGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left"/>
+                        <RadioButton GroupName="RotationAngleGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" IsChecked="True"/>
                         <RadioButton GroupName="RotationAngleGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>
                         <RadioButton GroupName="RotationAngleGrp" Content="Z" Padding="5,0,10,0" HorizontalAlignment="Left"/>
                     </StackPanel>
@@ -50,16 +50,16 @@
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
 
-                <StackPanel x:Name="TransformationGrp">
-                    <Label Content="Trasnformation" FontSize="20" HorizontalAlignment="Center"/>
+                <StackPanel x:Name="TransitionGrp">
+                    <Label Content="Transition" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
-                    <TextBox x:Name="TransformationValueTb" Text="0"/>
-                    <StackPanel x:Name="TransformationGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                        <RadioButton GroupName="TransformationGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left"/>
-                        <RadioButton GroupName="TransformationGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>
-                        <RadioButton GroupName="TransformationGrp" Content="Z" Padding="5,0,10,0" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TransitionValueTb" Text="0"/>
+                    <StackPanel x:Name="TransitionGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
+                        <RadioButton GroupName="TransitionGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" IsChecked="True"/>
+                        <RadioButton GroupName="TransitionGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>
+                        <RadioButton GroupName="TransitionGrp" Content="Z" Padding="5,0,10,0" HorizontalAlignment="Left"/>
                     </StackPanel>
-                    <Button x:Name="BtnApplyTransformation" Content="Apply" Click="OnBtnApplyTransformationClicked"/>
+                    <Button x:Name="BtnApplyTransition" Content="Apply" Click="OnBtnApplyTransitionClicked"/>
                 </StackPanel>
 
                 <!--spacing component-->

@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
 namespace ComputerGraphics {
@@ -75,6 +76,8 @@ namespace ComputerGraphics {
         private readonly char delim = FileParserUtil.delimiter;
         private AnchorPointHelper apHelper = new AnchorPointHelper();
         Point centerPoint = new Point();
+        private Point3D shapesMiddlePt = new Point3D(100, -100, -50);
+        private static readonly string CONFIG_FILENAME = "..\\..\\config6.txt";
 
         //keep track of new shapes (points) added to the canvas
         public void WriteToTrackingFile(string str, string shapeKey) {
@@ -106,6 +109,8 @@ namespace ComputerGraphics {
 
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
+
+            LoadFile(CONFIG_FILENAME);
         }
 
         //the anchor point btn is used to display the top right btn that is to be dragged on Transformation:
@@ -483,11 +488,15 @@ namespace ComputerGraphics {
             };
             var result = ofd.ShowDialog();
             if (result == true) {
-                currentWorkingFile = ofd.FileName;
-                parser.ParseFile(currentWorkingFile);
-                DrawShapesFromFile(parser);
-                DrawProjection();
+                LoadFile(ofd.FileName);
             }
+        }
+
+        private void LoadFile(string fileName) {
+            currentWorkingFile = fileName;
+            parser.ParseFile(currentWorkingFile);
+            DrawPolygons(parser.polygonList);
+            DrawShapesFromFile(parser);
         }
 
         private void DrawProjection() {
@@ -542,9 +551,10 @@ namespace ComputerGraphics {
                         polygon.poly.Points[i].Y + Height/ 2
                         ));
                 }
-
+                
+                //draw polygon on canvas:
                 myCanvas.Children.Add(newPoly);
-            }
+            }            
         }
 
         private void DrawBezierCurves(List<Bezier> bezierList) {
@@ -595,12 +605,24 @@ namespace ComputerGraphics {
             }
         }
         
-        public void OnBtnApplyTransformationClicked(object sender, RoutedEventArgs e) {
+        public void OnBtnApplyTransitionClicked(object sender, RoutedEventArgs e) {
 
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+
+            //clear canvas
+            Clear(false);
+
+            var scaleValue = Double.Parse(ScalingValueTb.Text);
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].Scale(scaleValue);
+            }
+
+            DrawPolygons(parser.polygonList);
             
+
         }
 
         private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
