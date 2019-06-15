@@ -177,8 +177,10 @@ namespace ComputerGraphics {
                         newVertextes.Add(Transformations.Orthographic(vertex));
                         break;
                     case ProjectionType.OBLIQUE:
+                        newVertextes.Add(Transformations.Oblique(vertex));
                         break;
                     case ProjectionType.PERSPECTIVE:
+                        newVertextes.Add(Transformations.Perspective(vertex));
                         break;
                 }
             }

@@ -514,18 +514,18 @@ namespace ComputerGraphics {
             //get the projection type from the gui radio buttons
             var type = GetProjectionType();
 
-            switch (type) {
-                case ProjectionType.ORTHOGRAPHIC:
-                    DrawOrthographic();
-                    break;
-                case ProjectionType.OBLIQUE:
-                    DrawOblique();
-                    break;
-                case ProjectionType.PERSPECTIVE:
-                    DrawPerspective();
-                    break;
+            //clear canvas
+            Clear();
 
+            //reload original positions
+            parser.ParseFile(currentWorkingFile);
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].PerformProjection(type);
             }
+
+            DrawPolygons(parser.polygonList);
+
         }
 
         private ProjectionType GetProjectionType() {
@@ -545,24 +545,6 @@ namespace ComputerGraphics {
             return ProjectionType.ORTHOGRAPHIC;
         }
 
-        private void DrawPerspective() {
-            
-        }
-
-        private void DrawOblique() {
-            
-        }
-
-        private void DrawOrthographic() {
-            //clear canvas
-            Clear(false);
-
-            for (int i = 0; i < parser.polygonList.Count; i++) {
-                parser.polygonList[i].PerformProjection(ProjectionType.ORTHOGRAPHIC);
-            }
-
-            DrawPolygons(parser.polygonList);
-        }
 
         //draw all shapes from the current working file
         private void DrawShapesFromFile(FileParserUtil parser) {
@@ -674,7 +656,6 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
-
             //clear canvas
             Clear(false);
 
@@ -904,6 +885,8 @@ namespace ComputerGraphics {
             Console.WriteLine("OnProjectionChanged");
             if(myCanvas != null) {
                 DrawProjection();
+                OnBtnApplyScalingClicked(null, null);
+
             }
         }
 

@@ -131,6 +131,7 @@ namespace ComputerGraphics {
             lineList.Clear();
             circleList.Clear();
             bezierList.Clear();
+            polygonList.Clear();
         }
 
     }

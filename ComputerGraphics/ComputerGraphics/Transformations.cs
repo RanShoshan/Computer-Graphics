@@ -10,7 +10,7 @@ namespace ComputerGraphics {
     static class Transformations {
 
         public static readonly Point3D shapesMiddlePt = new Point3D(100.0, -100.0, -50.0);
-        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -500.0);
+        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -300.0);
 
         //min and max values for Z axis distance (artificial) on screen:
         public static readonly Point zDistance = new Point(-500.0, 500.0);
@@ -61,10 +61,13 @@ namespace ComputerGraphics {
         private static double[,] RotateXMatrix(double angle) {
             //refactor this sentence and use in other places:
             angle = (angle * (Math.PI / 180));
+            var cos = Math.Cos(angle);
+            var sin = Math.Sin(angle);
+
             double[,] mtx = {
                 { 1, 0, 0, 0 },
-                { 0, Math.Cos(angle), Math.Sin(angle), 0 },
-                { 0, -Math.Sin(angle), Math.Cos(angle), 0 },
+                { 0, cos, sin, 0 },
+                { 0, -sin, cos, 0 },
                 { 0, 0, 0, 1 }
             };
             return mtx;
@@ -73,10 +76,13 @@ namespace ComputerGraphics {
         //matrix for Y rotation
         private static double[,] RotateYMatrix(double angle) {
             angle = (angle * (Math.PI / 180));
+            var cos = Math.Cos(angle);
+            var sin = Math.Sin(angle);
+
             double[,] mtx = {
-                { Math.Cos(angle), 0, -Math.Sin(angle), 0 },
+                { cos, 0, -sin, 0 },
                 { 0, 1, 0, 0 },
-                { Math.Sin(angle), 0, Math.Cos(angle), 0 },
+                { sin, 0, cos, 0 },
                 { 0, 0, 0, 1 }
             };
             return mtx;
@@ -85,9 +91,12 @@ namespace ComputerGraphics {
         //matrix for Z rotation
         private static double[,] RotateZMatrix(double angle) {
             angle = (angle * (Math.PI / 180));
+            var cos = Math.Cos(angle);
+            var sin = Math.Sin(angle);
+
             double[,] mtx = {
-                { Math.Cos(angle), Math.Sin(angle), 0, 0 },
-                { -Math.Sin(angle), Math.Cos(angle), 0, 0 },
+                { cos, sin, 0, 0 },
+                { -sin, cos, 0, 0 },
                 { 0, 0, 1, 0 },
                 { 0, 0, 0, 1 }
             };
@@ -97,11 +106,7 @@ namespace ComputerGraphics {
 
         //projections implementation:
         //orthographic:
-        public static Point3D Orthographic(Point3D vertex, double angle = 0.0) {
-
-            //cos and sin angle calculation
-            var cos = (Math.Cos(angle * (Math.PI / 180)));
-            var sin = (Math.Sin(angle * (Math.PI / 180)));
+        public static Point3D Orthographic(Point3D vertex) {
 
             //base matrix representation of our vertex:
             double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
@@ -110,7 +115,7 @@ namespace ComputerGraphics {
             double[,] orthographicMtx = { 
                 { 1, 0, 0, 0 }, 
                 { 0, 1, 0, 0 }, 
-                { cos, sin, 0, 0 }, 
+                { 0, 0, 1, 0 }, 
                 { 0, 0, 0, 1 }
             };
 
@@ -122,15 +127,19 @@ namespace ComputerGraphics {
 
 
         //oblique:
-        public static Point3D Oblique(Point3D vertex) {
+        public static Point3D Oblique(Point3D vertex, double angle = 90.0) {
             //base matrix representation of our vertex:
             double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
-            
-            //oblique matrix representation
+
+            //cos and sin angle calculation
+            var cos = (Math.Cos(angle * (Math.PI / 180)));
+            var sin = (Math.Sin(angle * (Math.PI / 180)));
+
+            //oblique matrix representation (Cabinet)
             double[,] obliqueMtx = { 
                 { 1, 0, 0, 0 }, 
                 { 0, 1, 0, 0 }, 
-                { 0, 0, 0, 0 }, 
+                { cos/2, sin/2, 1, 0 }, 
                 { 0, 0, 0, 1 }
             };
             
@@ -146,14 +155,13 @@ namespace ComputerGraphics {
             //base matrix representation of our vertex:
             double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
 
-            double Z;
-
-            Z = 1 / (1 + (vertex.Z / userPov.Z));
+            //calculate S(Z) as in formula
+            var sZ = 1 / (1 + (vertex.Z / userPov.Z));
 
             //perspective matrix representation
             double[,] perspectiveMtx = { 
-                { Z, 0, 0, 0 }, 
-                { 0, Z, 0, 0 }, 
+                { sZ, 0, 0, 0 }, 
+                { 0, sZ, 0, 0 }, 
                 { 0, 0, 0, 0 }, 
                 { 0, 0, 0, 1 }
             };

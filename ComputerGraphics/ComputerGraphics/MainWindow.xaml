@@ -44,7 +44,7 @@
                 <StackPanel x:Name="RotationAngleGrp">
                     <Label Content="Rotation" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider x:Name="RotationSlider" Minimum="-360" Maximum="360" Value="0" ValueChanged="OnRotationSliderValueChanged" IsSnapToTickEnabled="True"/>
-                    <TextBox x:Name="RotationValueTb" Text="0" TextChanged="OnRotationValueInputTextChanged"/>
+                    <TextBox x:Name="RotationValueTb" Text="15" TextChanged="OnRotationValueInputTextChanged"/>
                     <StackPanel x:Name="RotationAngleGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
                         <RadioButton GroupName="RotationAngleGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" IsChecked="True"/>
                         <RadioButton GroupName="RotationAngleGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>
