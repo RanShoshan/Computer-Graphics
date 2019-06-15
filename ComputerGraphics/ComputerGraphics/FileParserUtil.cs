@@ -84,21 +84,8 @@ namespace ComputerGraphics {
             }
 
             var poly = new Polygon { Stroke = Brushes.Black, StrokeThickness = 1, Fill = Brushes.White };
-            poly.Points = BuildPointCollection(tempVertexList);
-            polygonList.Add(new MyPolygon(poly, tempVertexList));
-        }
-
-        private PointCollection BuildPointCollection(List<Point3D> tempVertexList) {
-            var pc = new PointCollection();
-            //triangle (pyramid):
-            pc.Add(new Point(tempVertexList[0].X, tempVertexList[0].Y));
-            pc.Add(new Point(tempVertexList[1].X, tempVertexList[1].Y));
-            pc.Add(new Point(tempVertexList[2].X, tempVertexList[2].Y));
-            //square (cube):
-            if (tempVertexList.Count == 4) {
-                pc.Add(new Point(tempVertexList[3].X, tempVertexList[3].Y));
-            }
-            return pc;
+            poly.Points = ShapesHelper.BuildPointCollection(tempVertexList);
+            polygonList.Add(new MyPolygon(poly, tempVertexList, vertexIndexes));
         }
 
         private void AddVertexToList(string[] vals) {
@@ -145,5 +132,6 @@ namespace ComputerGraphics {
             circleList.Clear();
             bezierList.Clear();
         }
+
     }
 }

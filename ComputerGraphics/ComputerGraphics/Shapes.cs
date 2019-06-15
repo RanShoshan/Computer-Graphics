@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
@@ -17,7 +18,7 @@ namespace ComputerGraphics {
     class Shapes {
     }
 
-    class ShapesHelper {
+    public static class ShapesHelper {
         internal static void MultPointBy(ref Point p, double val) {
             p.X *= val;
             p.Y *= val;
@@ -62,6 +63,19 @@ namespace ComputerGraphics {
             var val1 = Math.Max(b.cp1.X, b.cp2.X);
             var val2 = Math.Max(b.cp3.X, b.cp4.X);
             return Math.Min(val1, val2);
+        }
+
+        internal static PointCollection BuildPointCollection(List<Point3D> tempVertexList) {
+            var pc = new PointCollection();
+            //triangle (pyramid):
+            pc.Add(new Point(tempVertexList[0].X, tempVertexList[0].Y));
+            pc.Add(new Point(tempVertexList[1].X, tempVertexList[1].Y));
+            pc.Add(new Point(tempVertexList[2].X, tempVertexList[2].Y));
+            //square (cube):
+            if (tempVertexList.Count == 4) {
+                pc.Add(new Point(tempVertexList[3].X, tempVertexList[3].Y));
+            }
+            return pc;
         }
     }
 
@@ -125,10 +139,25 @@ namespace ComputerGraphics {
     public class MyPolygon {
         public Polygon poly;
         public List<Point3D> vertexes = new List<Point3D>();
+        public int[] vertexIndexes;
 
-        public MyPolygon(Polygon poly, List<Point3D> vertexes) {
+        public MyPolygon(Polygon poly, List<Point3D> vertexes, int[] vertexIndexes) {
             this.poly = poly;
             this.vertexes = vertexes;
+            this.vertexIndexes = vertexIndexes;
+        }
+
+        internal void Scale(double scaleValue) {
+
+            var newVertextes = new List<Point3D>();
+
+            foreach (var vertex in vertexes) {
+                newVertextes.Add(Transformations.Scale(vertex, scaleValue));
+            }
+
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+
         }
     }
 
