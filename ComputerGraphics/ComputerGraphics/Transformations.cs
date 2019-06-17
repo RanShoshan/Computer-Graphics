@@ -13,7 +13,7 @@ namespace ComputerGraphics {
         public static readonly Point3D userPov = new Point3D(0.0, 0.0, -300.0);
 
         //min and max values for Z axis distance (artificial) on screen:
-        public static readonly Point zDistance = new Point(-500.0, 500.0);
+        public static readonly Point zDistanceMinMax = new Point(-500.0, 500.0);
 
 
         public static Point screen;
@@ -28,7 +28,7 @@ namespace ComputerGraphics {
             //calculate offset values
             var xCenter = Math.Abs(screen.X / 2);
             var yCenter = Math.Abs(screen.Y / 2);
-            var zCenter = Math.Abs(zDistance.X - zDistance.Y) / 2;
+            var zCenter = Math.Abs(zDistanceMinMax.X - zDistanceMinMax.Y) / 2;
 
             //our distance vector
             double[] distanceVector = { xCenter, yCenter, zCenter };
@@ -172,9 +172,6 @@ namespace ComputerGraphics {
         }
 
     }
-
-    
-
 
     //used fot matrix to matrix calculation etc:
     internal static class MtxHelper {
