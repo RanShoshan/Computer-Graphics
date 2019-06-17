@@ -10,17 +10,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
 
 namespace ComputerGraphics {
     class Shapes {
     }
 
-    class ShapesHelper {
+    public static class ShapesHelper {
+
         internal static void MultPointBy(ref Point p, double val) {
             p.X *= val;
             p.Y *= val;
         }
 
+        //Helper functions to get min and max X or Y from all shapes:
         internal static double GetMinX(MyLine line) {
             return Math.Min(line.pt2.X, line.pt1.X);
         }
@@ -60,8 +65,22 @@ namespace ComputerGraphics {
             var val2 = Math.Max(b.cp3.X, b.cp4.X);
             return Math.Min(val1, val2);
         }
+
+        internal static PointCollection BuildPointCollection(List<Point3D> tempVertexList) {
+            var pc = new PointCollection();
+            //triangle (pyramid):
+            pc.Add(new Point(tempVertexList[0].X, tempVertexList[0].Y));
+            pc.Add(new Point(tempVertexList[1].X, tempVertexList[1].Y));
+            pc.Add(new Point(tempVertexList[2].X, tempVertexList[2].Y));
+            //square (cube):
+            if (tempVertexList.Count == 4) {
+                pc.Add(new Point(tempVertexList[3].X, tempVertexList[3].Y));
+            }
+            return pc;
+        }
     }
 
+    //Bezier Curve representation
     public class Bezier {
         public static readonly string DEFAULT_SMOOTHING_RATE = "30";
         public Point cp1, cp2, cp3, cp4;
@@ -76,6 +95,7 @@ namespace ComputerGraphics {
 
         }
 
+        //Simple Scaling algorithm
         internal void Scale(double val) {
             ShapesHelper.MultPointBy(ref cp1, val);
             ShapesHelper.MultPointBy(ref cp2, val);
@@ -83,6 +103,7 @@ namespace ComputerGraphics {
             ShapesHelper.MultPointBy(ref cp4, val);
         }
 
+        //Transition algorithm
         internal void Move(double dx, double dy) {
             cp1.X += dx;
             cp2.X += dx;
@@ -95,6 +116,7 @@ namespace ComputerGraphics {
             cp4.Y += dy;
         }
 
+        //Mirroring algorithm accordign to direction (x or y)
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch (direction) {
                 case MirrorDirection.Y:
@@ -115,6 +137,61 @@ namespace ComputerGraphics {
 
     }
 
+    public class MyPolygon {
+        public Polygon poly;
+        public List<Point3D> vertexes = new List<Point3D>();
+        public int[] vertexIndexes;
+
+        public MyPolygon(Polygon poly, List<Point3D> vertexes, int[] vertexIndexes) {
+            this.poly = poly;
+            this.vertexes = vertexes;
+            this.vertexIndexes = vertexIndexes;
+        }
+
+        internal void Scale(double scaleValue) {
+            var newVertextes = new List<Point3D>();
+            foreach (var vertex in vertexes) {
+                newVertextes.Add(Transformations.Scale(vertex, scaleValue));
+            }
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+
+        }
+
+        internal void Rotate(Axis axis, double angle) {
+            var newVertextes = new List<Point3D>();
+            foreach (var vertex in vertexes) {
+                newVertextes.Add(Transformations.Rotate(vertex, axis, angle));
+            }
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+        }
+
+        internal void PerformProjection(ProjectionType type) {
+            var newVertextes = new List<Point3D>();
+
+            foreach (var vertex in vertexes) {
+                switch (type) {
+                    default:
+                    case ProjectionType.ORTHOGRAPHIC:
+                        newVertextes.Add(Transformations.Orthographic(vertex));
+                        break;
+                    case ProjectionType.OBLIQUE:
+                        newVertextes.Add(Transformations.Oblique(vertex));
+                        break;
+                    case ProjectionType.PERSPECTIVE:
+                        newVertextes.Add(Transformations.Perspective(vertex));
+                        break;
+                }
+            }
+
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+        }
+
+    }
+
+    //Circle representation
     public class Circle : MyLine {
         public Circle(string centerX, string centerY, string endX, string endY) 
             : base(centerX, centerY, endX, endY) {}
@@ -123,6 +200,7 @@ namespace ComputerGraphics {
             : base(p1, p2) { }
     }
 
+    //Line representation
     public class MyLine {
         public Point pt1;
         public Point pt2;
@@ -140,6 +218,7 @@ namespace ComputerGraphics {
             pt2 = new Point(Double.Parse(x2), Double.Parse(y2));
         }
 
+        //Transition algorithm
         internal void Move(double dx, double dy) {
             pt1.X += dx;
             pt1.Y += dy;
@@ -147,11 +226,13 @@ namespace ComputerGraphics {
             pt2.Y += dy;
         }
 
+        //Simple Scaling algorithm
         internal void Scale(double val) {
             ShapesHelper.MultPointBy(ref pt1, val);
             ShapesHelper.MultPointBy(ref pt2, val);
         }
-
+        
+        //Mirroring algorithm accordign to direction (x or y)
         internal void Mirror(Point centerPoint, MirrorDirection direction) {
             switch(direction) {
                 case MirrorDirection.Y:

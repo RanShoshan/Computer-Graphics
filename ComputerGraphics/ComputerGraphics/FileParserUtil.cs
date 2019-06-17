@@ -11,22 +11,32 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Windows;
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
+using System.Windows.Media;
 
 namespace ComputerGraphics {
     public enum ShapeName {
         CIRCLE,
         LINE,
         BEZIER,
+        POLYGON,
+        VERTEX,
         NONE
     }
 
+    //Parser util - reads shape values from configuration file and creates matching objects
     class FileParserUtil {
         
         public readonly List<Bezier> bezierList = new List<Bezier>();
         public readonly List<Circle> circleList = new List<Circle>();
         public readonly List<MyLine> lineList = new List<MyLine>();
-        public static readonly char delimiter = ',';
+        public readonly List<Point3D> vertexList = new List<Point3D>();
+        public readonly List<MyPolygon> polygonList = new List<MyPolygon>();
 
+        public static readonly char delimiter = ',';
+    
+        //Parse the file according to our format
         public void ParseFile(string fileName) {
 
             var shapeName = ShapeName.NONE;
@@ -42,6 +52,7 @@ namespace ComputerGraphics {
             }
         }
 
+        //Create and add new objects according to their matching shape type
         private void AddShapeToList(ShapeName shapeName, string[] vals) {
             switch (shapeName) {
                 case ShapeName.LINE:
@@ -53,9 +64,33 @@ namespace ComputerGraphics {
                 case ShapeName.BEZIER:
                     AddBezierToList(vals);
                     break;
+                case ShapeName.VERTEX:
+                    AddVertexToList(vals);
+                    break;
+                case ShapeName.POLYGON:
+                    AddPolygonToList(vals);
+                    break;
                 default:
                     break;
             }
+        }
+
+        private void AddPolygonToList(string[] vals) {
+            int[] vertexIndexes = Array.ConvertAll(vals, int.Parse);
+            List<Point3D> tempVertexList = new List<Point3D>();
+
+            foreach (var idx in vertexIndexes) {
+                tempVertexList.Add(vertexList[idx]);
+            }
+
+            var poly = new Polygon { Stroke = Brushes.Black, StrokeThickness = 1, Fill = Brushes.White };
+            poly.Points = ShapesHelper.BuildPointCollection(tempVertexList);
+            polygonList.Add(new MyPolygon(poly, tempVertexList, vertexIndexes));
+        }
+
+        private void AddVertexToList(string[] vals) {
+            vertexList.Add(new Point3D(
+                Double.Parse(vals[0]), Double.Parse(vals[1]), Double.Parse(vals[2])));
         }
 
         private void AddBezierToList(string[] vals) {
@@ -73,6 +108,12 @@ namespace ComputerGraphics {
         }
 
         private ShapeName GetShapeName(string v) {
+            if (v.Contains(ShapeName.VERTEX.ToString())) {
+                return ShapeName.VERTEX;
+            }
+            if (v.Contains(ShapeName.POLYGON.ToString())) {
+                return ShapeName.POLYGON;
+            }
             if (v.Contains(ShapeName.LINE.ToString())) {
                 return ShapeName.LINE;
             }
@@ -85,10 +126,13 @@ namespace ComputerGraphics {
             return ShapeName.NONE;
         }
 
+        //Clear lists
         internal void ClearCache() {
             lineList.Clear();
             circleList.Clear();
             bezierList.Clear();
+            polygonList.Clear();
         }
+
     }
 }

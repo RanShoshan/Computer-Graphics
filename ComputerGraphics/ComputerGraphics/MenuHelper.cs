@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * ran shoshan 308281575
+ * &
+ * shay rubach 305687352
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +13,11 @@ using System.Threading.Tasks;
 namespace ComputerGraphics {
     public static class MenuHelper {
         public static string MENU_TEXT = 
-            "Buttons from top to bottom:\n\n\n" +
+            "\nGuide:\n" +
+            "1. Load the 'config' file attached along with the.exe\n" +
+            "2. Perform any kind of operation you would like using the following tools:\n" +
+            "(*) note: you can only save after you have loaded the config file (*)\n\n" +
+            "\n\nTools from top to bottom:\n\n\n" +
             "Clear - clears entire screen\n\n" +
             "Save - saves the current canvas state to the LOADED file\n\n" +
             "Load - loads an existing file\n\n" +

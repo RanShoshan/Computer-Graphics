@@ -7,11 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
 namespace ComputerGraphics {
@@ -43,9 +45,20 @@ namespace ComputerGraphics {
         X,
         Y
     }
+
+    public enum Axis {
+        X,Y,Z
+    }
+
     public enum PixelStyle {
         DEFAULT = 0,
         BOLD
+    }
+
+    public enum ProjectionType {
+        ORTHOGRAPHIC,
+        OBLIQUE,
+        PERSPECTIVE
     }
 
     public class AnchorPointHelper {
@@ -67,11 +80,10 @@ namespace ComputerGraphics {
         private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
         private AnchorPointHelper apHelper = new AnchorPointHelper();
-        private int SCALE_UP = 1;
-        private int SCALE_DOWN = 0;
         Point centerPoint = new Point();
+        private static readonly string CONFIG_FILENAME = "..\\..\\config7.txt";
 
-
+        //keep track of new shapes (points) added to the canvas
         public void WriteToTrackingFile(string str, string shapeKey) {
             string[] full_file = File.ReadAllLines(tempFilePath);
             List<string> lines = new List<string>();
@@ -88,9 +100,8 @@ namespace ComputerGraphics {
         }
 
         public void CreatNewTxtFile() {
-            File.AppendAllText(tempFilePath, ShapeName.LINE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-            File.AppendAllText(tempFilePath, ShapeName.CIRCLE.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-            File.AppendAllText(tempFilePath, ShapeName.BEZIER.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.VERTEX.ToString() + SHAPE_TYPE_LINE_POSTFIX);
+            File.AppendAllText(tempFilePath, ShapeName.POLYGON.ToString() + SHAPE_TYPE_LINE_POSTFIX);
         }
 
         public MainWindow() {
@@ -102,8 +113,16 @@ namespace ComputerGraphics {
 
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
+            PublishOffset();
+
+            LoadFile(CONFIG_FILENAME);
         }
 
+        private void PublishOffset() {
+            Transformations.screen = new Point(Width, Height);
+        }
+
+        //the anchor point btn is used to display the top right btn that is to be dragged on Transformation:
         private void InitAnchorPointBtn() {
             //anchorPointBtn.BorderBrush = Brushes.White;
             Canvas.SetLeft(anchorPointBtn, 0);
@@ -144,6 +163,7 @@ namespace ComputerGraphics {
             DrawShapesFromFile(parser);
         }
 
+        //Mirroring a shape on x or y axis:
         private void MirrorShapes(MirrorDirection direction) {
             state = UserState.MIRROR;
             ToggleOffAllButtons(direction == MirrorDirection .X ? btnMirrorX : btnMirrorY);
@@ -166,7 +186,7 @@ namespace ComputerGraphics {
 
         }
 
-
+        //Move shapes on the canvas:
         private void MoveShapes(double dx, double dy) {
             foreach (MyLine line in parser.lineList) {
                 line.Move(dx, dy);
@@ -184,6 +204,7 @@ namespace ComputerGraphics {
             apHelper.downPos = e.GetPosition(myCanvas);
         }
 
+        //Scaling algorithm - scaleup value = 1.075 for every click, scaledown value = 0.925:
         private void ScaleShapes(double scaleVal = 0.0) {
             var defaultScaleValUp = 1.075;
             var defaultScaleValDown = 0.925;
@@ -203,10 +224,13 @@ namespace ComputerGraphics {
             foreach (Bezier b in parser.bezierList)
                 b.Scale(scaleVal);
             Clear(false);
-            CenterShapes();
-            DrawShapesFromFile(parser);
+            //CenterShapes();
+            //DrawShapesFromFile(parser);
         }
 
+        //Used to find top left and bottom right corners of all shapes, calculate their midpoint
+        //and add (or subtruct) its offset from the canvas middle X,Y position in order to center
+        //all shapes to the center of the canvas
         private void CenterShapes() {
             var midPoint = CalculateMiddlePoint(parser);
             var centerXOffset = Math.Abs(midPoint.X - (Width / 2));
@@ -225,6 +249,7 @@ namespace ComputerGraphics {
 
         }
 
+        //get the middle point of all shapes (as a "batch")
         private Point CalculateMiddlePoint(FileParserUtil parser) {
             MyLine baseLine = parser.lineList[0];
             Point topLeft = new Point(baseLine.pt1.X, baseLine.pt1.Y);
@@ -255,45 +280,8 @@ namespace ComputerGraphics {
             Console.WriteLine("midPoint = " + midPoint.X + "," + midPoint.Y);
             return midPoint;
         }
-
-        private void ScaleShapes(double dx, double dy) {
-            int SCALE_DIRECTION = (dy < 0) ? SCALE_UP : SCALE_DOWN;
-
-            foreach (MyLine line in parser.lineList) {
-                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, line.pt2.Y, line.pt1.Y);
-
-                LineCalibrated lc = new LineCalibrated(line);
-                MultPointsBy(ref lc.calibrated.pt1, ref lc.calibrated.pt2, scaleValue);
-                lc.FixCalibrationOffset();
-                line.pt1.X = lc.calibrated.pt1.X;
-                line.pt1.Y = lc.calibrated.pt1.Y;
-                line.pt2.X = lc.calibrated.pt2.X;
-                line.pt2.Y = lc.calibrated.pt2.Y;
-            }
-            foreach (Circle circle in parser.circleList) {
-                var scaleValue = GetScaleValue(SCALE_DIRECTION, dy, circle.pt2.Y, circle.pt1.Y);
-                CircleCalibrated cc = new CircleCalibrated(circle);
-                MultPointsBy(ref cc.calibrated.pt1, ref cc.calibrated.pt2, scaleValue);
-                cc.FixCalibrationOffset();
-                circle.pt1.X = cc.calibrated.pt1.X;
-                circle.pt1.Y = cc.calibrated.pt1.Y;
-                circle.pt2.X = cc.calibrated.pt2.X;
-                circle.pt2.Y = cc.calibrated.pt2.Y;
-            }
-            foreach (Bezier bezier in parser.bezierList) {
-            }
-            //var linearDistance = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
-
-        }
-
-        private double GetScaleValue(int SCALE_DIRECTION, double dy, double y2, double y1) {
-            var scaleValue = SCALE_DIRECTION + Math.Abs(dy) / Math.Abs(y2 - y1);
-            if (SCALE_DIRECTION == SCALE_DOWN) {
-                scaleValue = 1 - scaleValue;
-            }
-            return scaleValue;
-        }
-
+        
+        //Scaling logic - multiply by a constant
         private void MultPointsBy(ref Point p1, ref Point p2, double scaleValue) {
             p1.X *= scaleValue;
             p1.Y *= scaleValue;
@@ -305,6 +293,7 @@ namespace ComputerGraphics {
             Clear();
         }
 
+        //Clear canvas, free memory, reset state of buttons, clear temp tracking file
         public void Clear(bool clearCache = true, bool resetState = true) {
             if (resetState) {
                 state = UserState.NONE;
@@ -312,24 +301,24 @@ namespace ComputerGraphics {
             ToggleOffAllButtons(null, resetState);
             ReattachHelperButtons();
 
-            //REMOVE AND ATTACH MIRROR BTN HERE
             if (clearCache) {
                 parser.ClearCache();
                 File.Delete(tempFilePath);
                 CreatNewTxtFile();
             }
 
-
             anchorPoint.X = anchorPoint.Y = 0;
             GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
         }
 
+        //Gui reattachments
         private void ReattachHelperButtons() {
             myCanvas.Children.Clear();
             ReattachAnchorPointBtn();
             ReattachHelpWindow();
         }
 
+        //Gui reattachments
         private void ReattachHelpWindow() {
             if (myCanvas.Children.Contains(helpWindow)) {
                 myCanvas.Children.Remove(helpWindow);
@@ -338,6 +327,7 @@ namespace ComputerGraphics {
             helpWindow.Text = MenuHelper.MENU_TEXT;
         }
 
+        //Gui reattachments
         private void ReattachAnchorPointBtn() {
             if (myCanvas.Children.Contains(anchorPointBtn)) {
                 myCanvas.Children.Remove(anchorPointBtn);
@@ -348,14 +338,6 @@ namespace ComputerGraphics {
         public void OnBtnCircleClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons(btnCircle);
             state = UserState.BTN_CIRCLE_1ST_CLICK;
-        }
-
-        public void OnBtnBrushClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnBrush);
-        }
-
-        public void OnBtnPaintcanClicked(object sender, RoutedEventArgs e) {
-            ToggleOffAllButtons(btnPaintcan);
         }
 
         public void DrawCircle(Circle obj) {
@@ -389,14 +371,13 @@ namespace ComputerGraphics {
             tbBezierNumOfLines.IsEnabled = true;
         }
 
-        private static void Swap<T>(ref T lhs, ref T rhs) { T temp; temp = lhs; lhs = rhs; rhs = temp; }
-
         public void DrawLine(MyLine line) {
             if (line != null)
                 DrawLine(line.pt1, line.pt2);
         }
 
         public void DrawLine(Point p1, Point p2) {
+            
             var line = new Line {
                 Stroke = Brushes.Blue,
                 X1 = p1.X,
@@ -410,10 +391,12 @@ namespace ComputerGraphics {
             UpdateAnchorPoint(p2);
         }
 
+        //conversion function
         public string PointToString(Point p) {
             return p.X.ToString() + ',' + p.Y.ToString();
         }
 
+        //handle canvas events
         public void OnCanvasMouseDown(object sender, MouseButtonEventArgs e) {
             Point p = e.GetPosition(myCanvas);
 
@@ -463,7 +446,6 @@ namespace ComputerGraphics {
                 default:
                     break;
             }
-            //UpdateAnchorPoint(p);
         }
 
         public void DrawBezierCurve(Bezier b, string smoothingRate) {
@@ -483,32 +465,8 @@ namespace ComputerGraphics {
             }
             DrawLine(bezierPoints[bezierPoints.Count - 1], b.cp4);
         }
-
-        private bool SetPixel(int x, int y, PixelStyle style = PixelStyle.DEFAULT, Brush color = null, bool updateAnchor = true) {
-
-            if (updateAnchor) {
-                Point p = new Point(x, y);
-                UpdateAnchorPoint(p);
-            }
-            System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle();
-            rect.Stroke = color ?? Brushes.Blue;
-            if (style == PixelStyle.BOLD) {
-                rect.StrokeThickness = STROKE_BOLD;
-                rect.Width = STROKE_BOLD;
-                rect.Height = STROKE_BOLD;
-            }
-            else {
-                rect.StrokeThickness = 1;
-                rect.Width = 1;
-                rect.Height = 1;
-            }
-            Canvas.SetLeft(rect, x);
-            Canvas.SetTop(rect, y);
-            myCanvas.Children.Add(rect);
-            return true;
-
-        }
-
+        
+        //remove button toggles
         public void ToggleOffAllButtons(ToggleButton activeBtn = null, bool hideAnchor = true) {
 
             foreach (var item in mainToolbar.Items) {
@@ -539,19 +497,81 @@ namespace ComputerGraphics {
             };
             var result = ofd.ShowDialog();
             if (result == true) {
-                currentWorkingFile = ofd.FileName;
-                parser.ParseFile(currentWorkingFile);
-                ScaleShapes(1);
+                LoadFile(ofd.FileName);
             }
         }
 
+        private void LoadFile(string fileName) {
+            currentWorkingFile = fileName;
+            parser.ParseFile(currentWorkingFile);
+            DrawPolygons(parser.polygonList);
+            DrawShapesFromFile(parser);
+            //DrawProjection();
+        }
+
+        private void DrawProjection() {
+
+            //get the projection type from the gui radio buttons
+            var type = GetProjectionType();
+
+            //clear canvas
+            Clear();
+
+            //reload original positions
+            parser.ParseFile(currentWorkingFile);
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].PerformProjection(type);
+            }
+
+            DrawPolygons(parser.polygonList);
+
+        }
+
+        private ProjectionType GetProjectionType() {
+            foreach(RadioButton type in ProjectionRadioGrpPanel.Children) {
+                if(type.IsChecked == true) {
+                    if(type.Content.ToString() == "Orthographic") {
+                        return ProjectionType.ORTHOGRAPHIC;
+                    }
+                    if (type.Content.ToString() == "Oblique") {
+                        return ProjectionType.OBLIQUE;
+                    }
+                    else { 
+                        return ProjectionType.PERSPECTIVE;
+                    }
+                }
+            }
+            return ProjectionType.ORTHOGRAPHIC;
+        }
+
+
+        //draw all shapes from the current working file
         private void DrawShapesFromFile(FileParserUtil parser) {
             File.Delete(tempFilePath);
             CreatNewTxtFile();
+            DrawPolygons(parser.polygonList);
+        }
 
-            DrawLines(parser.lineList);
-            DrawCircles(parser.circleList);
-            DrawBezierCurves(parser.bezierList);
+        private void DrawPolygons(List<MyPolygon> polygonList) {
+            foreach (var polygon in polygonList) {
+                var newPoly = new Polygon {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1,
+                    Points = new PointCollection()
+                };
+
+                //create new point collection with calculated offset before drawing on canvas:
+                for(int i=0; i < polygon.poly.Points.Count ; i++) {
+                    newPoly.Points.Add(new Point(
+                        polygon.poly.Points[i].X + Width / 2,
+                        polygon.poly.Points[i].Y + Height/ 2
+                        ));
+                }
+                
+                //draw polygon on canvas:
+                myCanvas.Children.Add(newPoly);
+            }            
         }
 
         private void DrawBezierCurves(List<Bezier> bezierList) {
@@ -595,16 +615,162 @@ namespace ComputerGraphics {
             }
         }
 
+
+        public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
+            
+            //clear canvas
+            Clear(false);
+
+            var axis = Axis.X;
+            var angle = Double.Parse(RotationValueTb.Text);
+
+            foreach (RadioButton radioBtn in RotationAngleGrpPanel.Children) {
+                if (radioBtn.IsChecked == true) {
+                    axis = GetAxis(radioBtn);
+                    break;
+                }
+            }
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].Rotate(axis, angle);
+            }
+
+            DrawPolygons(parser.polygonList);
+
+        }
+
+        private Axis GetAxis(RadioButton radioBtn) {
+            if (radioBtn.Content.ToString() == "X") {
+                return Axis.X;
+            }
+            else if (radioBtn.Content.ToString() == "Y") {
+                return Axis.Y;
+            }
+            else {
+                return Axis.Z;
+            }
+        }
+
+        public void OnBtnApplyTransitionClicked(object sender, RoutedEventArgs e) {
+
+        }
+
+        public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+            //clear canvas
+            Clear(false);
+
+            var scaleValue = Double.Parse(ScalingValueTb.Text);
+
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].Scale(scaleValue);
+            }
+
+            if (ShapesOutOfBordersAfterScaling()) {
+                ScaleShapesBackToRecentSize();
+            }
+
+            DrawPolygons(parser.polygonList);
+        }
+
+        private bool ShapesOutOfBordersAfterScaling() {
+            //todo: validate vertex are in canvas border
+            return false;
+        }
+
+        private void ScaleShapesBackToRecentSize() {
+            //todo: scale back to recent dims if needed
+        }
+
+
+        private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            var slider = sender as Slider;
+            //double value = Math.Round(slider.Value, MAX_DIGITS_AFTER_F_POINT);
+
+            // ... Set Window Title.
+            RotationValueTb.Text = slider.Value.ToString();
+        }
+
+        //validate legal angle value on input entered
+        private void OnRotationValueInputTextChanged(object sender, TextChangedEventArgs args) {
+            var MAX_ANGLE_DIGITS = 3;
+            var textBox = sender as TextBox;
+            var illegalInputMsg = "Input should only contain \nnumbers between -360 and 360!";
+            Double angleValue = 0.0;
+
+            Regex negRgx = new Regex(@"^-[0-9]+$");
+            Regex posRgx = new Regex(@"^[0-9]+$");
+            
+            Match negMatch = negRgx.Match(RotationValueTb.Text);
+            Match posMatch = posRgx.Match(RotationValueTb.Text);
+
+            DisplayIllegalValueNotificiation(null, false);
+
+            if (textBox.Text.Contains("-")) {
+                MAX_ANGLE_DIGITS++;
+            }
+            if (textBox.Text.Length > MAX_ANGLE_DIGITS) {
+                textBox.Text = textBox.Text.Substring(0, MAX_ANGLE_DIGITS);
+                return;
+            }
+
+            //negative angle
+            if (negMatch.Success) {
+                Console.WriteLine("negMatch.");
+                angleValue = Double.Parse(RotationValueTb.Text.Replace("-", ""));
+                if (isInValidRange(angleValue)) {
+                    RotationSlider.Value = angleValue * -1;
+                }
+                else {
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                    textBox.Text = "";
+                }
+            }
+            //positive angle
+            else if (posMatch.Success) {
+                Console.WriteLine("posMatch.");
+                angleValue = Double.Parse(RotationValueTb.Text);
+                if (isInValidRange(angleValue)) {
+                    RotationSlider.Value = angleValue;
+                }
+                else {
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                    textBox.Text = "";
+                }
+            }
+            //illegal input
+            else {
+                if (textBox.Text != "-") {
+                    Console.WriteLine("illegal input");
+                    textBox.Text = "";
+                    DisplayIllegalValueNotificiation(illegalInputMsg);
+                }
+            }
+            return;
+        }
+
+        private void DisplayIllegalValueNotificiation(string msg = "", bool display = true) {
+            if (UserNotificationBorder != null && UserNotification != null) {
+                UserNotificationBorder.Visibility = display ? Visibility.Visible : Visibility.Hidden;
+                UserNotification.Text = display ? msg : "";
+            }
+        }
+
+        private bool isInValidRange(double angleValue) {
+            return angleValue >= 0 && angleValue <= 360;
+        }
+
         public void OnBtnScaleUpClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons();
             state = UserState.SCALE_UP;
             ScaleShapes();
+            DrawShapesFromFile(parser);
         }
 
         public void OnBtnScaleDownClicked(object sender, RoutedEventArgs e) {
             ToggleOffAllButtons();
             state = UserState.SCALE_DOWN;
             ScaleShapes();
+            DrawShapesFromFile(parser);
         }
 
         public void OnBtnStrechXClicked(object sender, RoutedEventArgs e) {
@@ -625,6 +791,7 @@ namespace ComputerGraphics {
             ShowAnchorPoint();
         }
 
+        //update top right corner point of all shapes, used to calcualte position for our anchor button
         private void UpdateAnchorPoint(Point p) {
             anchorPoint.X = Math.Max(anchorPoint.X, p.X);
             anchorPoint.Y = anchorPoint.Y > 0 ? Math.Min(anchorPoint.Y, p.Y) : p.Y;
@@ -634,7 +801,6 @@ namespace ComputerGraphics {
 
         private void ShowAnchorPoint(bool show = true) {
             if (show == true) {
-                //SetPixel(Convert.ToInt32(anchorPoint.X), Convert.ToInt32(anchorPoint.Y), PixelStyle.BOLD, Brushes.Orange, false);
                 anchorPointBtn.Visibility = Visibility.Visible;
             }
             else {
@@ -695,12 +861,14 @@ namespace ComputerGraphics {
             }
         }
 
+        
         internal Point RotatePoint(Point pointToRotate, double angleInDegrees) {
             centerPoint.X = myCanvas.ActualWidth / 2;
             centerPoint.Y = myCanvas.ActualHeight / 2;
             return RotatePoint(pointToRotate, centerPoint, angleInDegrees);
         }
 
+        //Rotation algorithm for a single point according to angle input from GUI
         internal Point RotatePoint(Point pointToRotate, Point centerPoint, double angleInDegrees) {
             double angleInRadians = angleInDegrees * (Math.PI / 180);
             double cosTheta = Math.Cos(angleInRadians);
@@ -711,6 +879,15 @@ namespace ComputerGraphics {
                 Y = (sinTheta * (pointToRotate.X - centerPoint.X) +
                     cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
             };
+        }
+
+        private void OnProjectionChanged(object sender, RoutedEventArgs e) {
+            Console.WriteLine("OnProjectionChanged");
+            if(myCanvas != null) {
+                DrawProjection();
+                OnBtnApplyScalingClicked(null, null);
+
+            }
         }
 
     }
