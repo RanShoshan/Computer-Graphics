@@ -15,7 +15,6 @@ namespace ComputerGraphics {
         //min and max values for Z axis distance (artificial) on screen:
         public static readonly Point zDistanceMinMax = new Point(-1000.0, 1000.0);
 
-
         public static Point screen;
 
         //scale polygon
@@ -30,8 +29,8 @@ namespace ComputerGraphics {
             var yCenter = Math.Abs(screen.Y / 2);
             var zCenter = Math.Abs(zDistanceMinMax.X - zDistanceMinMax.Y) / 2;
 
-            //our distance vector
-            double[] distanceVector = { xCenter, yCenter, zCenter };
+            //our distance vector - we need this?
+            //double[] distanceVector = { xCenter, yCenter, zCenter };
 
             //base matrix representation of our vertex:
             double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
