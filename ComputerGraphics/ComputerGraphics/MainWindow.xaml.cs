@@ -32,34 +32,9 @@ namespace ComputerGraphics {
     public partial class MainWindow : Window {
 
         private static string pwd = Directory.GetCurrentDirectory();
-        public string tempFilePath = pwd + "\\tempWorkingFilePath.txt";
-        private string currentWorkingFile = "";
         public const int STROKE_BOLD = 10;
         private FileParserUtil parser = new FileParserUtil();
-        private readonly string SHAPE_TYPE_LINE_POSTFIX = ": \r\n";
         private readonly char delim = FileParserUtil.delimiter;
-        private static readonly string CONFIG_FILENAME = "..\\..\\config7.txt";
-
-        //keep track of new shapes (points) added to the canvas
-        public void WriteToTrackingFile(string str, string shapeKey) {
-            string[] full_file = File.ReadAllLines(tempFilePath);
-            List<string> lines = new List<string>();
-            int lineNum = 0;
-            lines.AddRange(full_file);
-            for (int i = 0; i < lines.Count; i++) {
-                if (lines[i].Contains(shapeKey)) {
-                    lineNum = i;
-                    break;
-                }
-            }
-            lines.Insert(lineNum + 1, str);
-            File.WriteAllLines(tempFilePath, lines.ToArray());
-        }
-
-        public void CreatNewTxtFile() {
-            File.AppendAllText(tempFilePath, ShapeName.VERTEX.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-            File.AppendAllText(tempFilePath, ShapeName.POLYGON.ToString() + SHAPE_TYPE_LINE_POSTFIX);
-        }
 
         public MainWindow() {
             InitializeComponent();
@@ -67,7 +42,7 @@ namespace ComputerGraphics {
             this.Width = System.Windows.SystemParameters.VirtualScreenWidth;
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
             PublishOffset();
-            LoadFile(CONFIG_FILENAME);
+            InitPolygons();
         }
 
         private void PublishOffset() {
@@ -86,8 +61,6 @@ namespace ComputerGraphics {
 
             if (clearCache) {
                 parser.ClearCache();
-                File.Delete(tempFilePath);
-                CreatNewTxtFile();
             }
 
             GC.Collect(); //does it really help us getting rid of non-referenced memory??? xD
@@ -128,9 +101,8 @@ namespace ComputerGraphics {
 
         }
 
-        private void LoadFile(string fileName) {
-            currentWorkingFile = fileName;
-            parser.ParseFile(currentWorkingFile);
+        private void InitPolygons() {
+            parser.CreatePolygonsFromConfiguration();
             DrawPolygons(parser.polygonList);
             DrawShapesFromFile(parser);
         }
@@ -144,16 +116,13 @@ namespace ComputerGraphics {
             Clear();
 
             //reload original positions
-            parser.ParseFile(currentWorkingFile);
+            parser.CreatePolygonsFromConfiguration();
 
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
-
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
-
             DrawPolygons(projectedPolygons);
-
         }
 
         private ProjectionType GetProjectionType() {
@@ -176,8 +145,6 @@ namespace ComputerGraphics {
 
         //draw all shapes from the current working file
         private void DrawShapesFromFile(FileParserUtil parser) {
-            File.Delete(tempFilePath);
-            CreatNewTxtFile();
             DrawPolygons(parser.polygonList);
         }
 

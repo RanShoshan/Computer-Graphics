@@ -34,14 +34,13 @@ namespace ComputerGraphics {
         public static readonly char delimiter = ',';
     
         //Parse the file according to our format
-        public void ParseFile(string fileName) {
+        public void CreatePolygonsFromConfiguration() {
 
             var shapeName = ShapeName.NONE;
-            string[] full_file = File.ReadAllLines(fileName);
-            List<string> lines = new List<string>();
-            lines.AddRange(full_file);
-            for (int i = 0; i < lines.Count; i++) {
-                if(GetShapeName(lines[i]) != ShapeName.NONE) {
+            var lines = polygonListConfig.Split('\n');
+
+            for (int i = 0; i < lines.Length-1; i++) {
+                if (GetShapeName(lines[i]) != ShapeName.NONE) {
                     shapeName = GetShapeName(lines[i]);
                     continue;
                 }
@@ -96,5 +95,33 @@ namespace ComputerGraphics {
             polygonList.Clear();
         }
 
+        private string polygonListConfig = 
+            "VERTEX:\n"+
+            "-200.0,-50.0,-50.0\n"+
+            "-100.0,-50.0,-50.0\n"+
+            "-200.0,50.0,-50.0\n"+
+            "-100.0,50.0,-50.0\n"+
+            "-200.0,-50.0,50.0\n"+
+            "-100.0,-50.0,50.0\n"+
+            "-200.0,50.0,50.0\n"+
+            "-100.0,50.0,50.0\n"+
+            "175.0,-75.0,1.0\n"+
+            "250.0,0.0,1.0\n"+
+            "175.0,0.0,-75.0\n"+
+            "100.0,0.0,1.0\n"+
+            "175.0,0.0,75.0\n"+
+            "175.0,75.0,1.0\n"+
+            "POLYGON:\n"+
+            "0,1,3,2\n"+
+            "1,5,7,3\n"+
+            "2,3,7,6\n"+
+            "4,0,2,6\n"+
+            "5,4,6,7\n"+
+            "0,4,5,1\n"+
+            "8,9,10\n"+
+            "11,8,10\n"+
+            "10,9,13\n"+
+            "11,10,13\n"+
+            "11,10,9,8\n";
     }
 }
