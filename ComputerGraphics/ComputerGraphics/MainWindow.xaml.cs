@@ -119,10 +119,13 @@ namespace ComputerGraphics {
             parser.CreatePolygonsFromConfiguration();
 
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
+
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
+
             DrawPolygons(projectedPolygons);
+
         }
 
         private ProjectionType GetProjectionType() {
@@ -215,16 +218,18 @@ namespace ComputerGraphics {
             Clear(false);
 
             var scaleValue = Double.Parse(ScalingValueTb.Text);
+            List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 parser.polygonList[i].Scale(scaleValue);
+                projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
 
             if (ShapesOutOfBordersAfterScaling()) {
                 ScaleShapesBackToRecentSize();
             }
 
-            DrawPolygons(parser.polygonList);
+            DrawPolygons(projectedPolygons);
         }
 
         private bool ShapesOutOfBordersAfterScaling() {
