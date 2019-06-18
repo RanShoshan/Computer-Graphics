@@ -28,9 +28,6 @@ namespace ComputerGraphics {
     //Parser util - reads shape values from configuration file and creates matching objects
     class FileParserUtil {
         
-        public readonly List<Bezier> bezierList = new List<Bezier>();
-        public readonly List<Circle> circleList = new List<Circle>();
-        public readonly List<MyLine> lineList = new List<MyLine>();
         public readonly List<Point3D> vertexList = new List<Point3D>();
         public readonly List<MyPolygon> polygonList = new List<MyPolygon>();
 
@@ -55,15 +52,6 @@ namespace ComputerGraphics {
         //Create and add new objects according to their matching shape type
         private void AddShapeToList(ShapeName shapeName, string[] vals) {
             switch (shapeName) {
-                case ShapeName.LINE:
-                    AddLineToList(vals);
-                    break;
-                case ShapeName.CIRCLE:
-                    AddCircleToList(vals);
-                    break;
-                case ShapeName.BEZIER:
-                    AddBezierToList(vals);
-                    break;
                 case ShapeName.VERTEX:
                     AddVertexToList(vals);
                     break;
@@ -93,20 +81,6 @@ namespace ComputerGraphics {
                 Double.Parse(vals[0]), Double.Parse(vals[1]), Double.Parse(vals[2])));
         }
 
-        private void AddBezierToList(string[] vals) {
-            bezierList.Add(new Bezier(
-                vals[0], vals[1], vals[2], vals[3],
-                vals[4], vals[5], vals[6], vals[7]));
-        }
-
-        private void AddCircleToList(string[] vals) {
-            circleList.Add(new Circle(vals[0], vals[1], vals[2], vals[3]));
-        }
-
-        private void AddLineToList(string[] vals) {
-            lineList.Add(new MyLine(vals[0], vals[1], vals[2], vals[3]));
-        }
-
         private ShapeName GetShapeName(string v) {
             if (v.Contains(ShapeName.VERTEX.ToString())) {
                 return ShapeName.VERTEX;
@@ -114,23 +88,11 @@ namespace ComputerGraphics {
             if (v.Contains(ShapeName.POLYGON.ToString())) {
                 return ShapeName.POLYGON;
             }
-            if (v.Contains(ShapeName.LINE.ToString())) {
-                return ShapeName.LINE;
-            }
-            if (v.Contains(ShapeName.CIRCLE.ToString())) {
-                return ShapeName.CIRCLE;
-            }
-            if (v.Contains(ShapeName.BEZIER.ToString())) {
-                return ShapeName.BEZIER;
-            }
             return ShapeName.NONE;
         }
 
         //Clear lists
         internal void ClearCache() {
-            lineList.Clear();
-            circleList.Clear();
-            bezierList.Clear();
             polygonList.Clear();
         }
 
