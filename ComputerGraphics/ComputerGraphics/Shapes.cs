@@ -167,9 +167,9 @@ namespace ComputerGraphics {
             poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
         }
 
-        internal void PerformProjection(ProjectionType type) {
+        internal MyPolygon PerformProjection(ProjectionType type) {
             var newVertextes = new List<Point3D>();
-
+            
             foreach (var vertex in vertexes) {
                 switch (type) {
                     default:
@@ -185,8 +185,12 @@ namespace ComputerGraphics {
                 }
             }
 
-            vertexes = newVertextes;
-            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+            //vertexes = newVertextes;
+            var newVertexIndexes = vertexIndexes;
+            var newPoly = new Polygon { Stroke = Brushes.Black, StrokeThickness = 1};
+            newPoly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+
+            return new MyPolygon(newPoly, newVertextes, newVertexIndexes);
         }
 
     }

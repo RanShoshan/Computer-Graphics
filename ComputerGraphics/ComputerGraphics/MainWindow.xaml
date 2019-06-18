@@ -74,7 +74,7 @@
                 <StackPanel>
                     <Label Content="Scaling" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
-                    <TextBox x:Name="ScalingValueTb" Text="1"/>
+                    <TextBox x:Name="ScalingValueTb" Text="1.2"/>
                     <RadioButton Visibility="Hidden" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" />
                     <Button x:Name="BtnApplyScaling" Content="Apply" Click="OnBtnApplyScalingClicked"/>
                 </StackPanel>

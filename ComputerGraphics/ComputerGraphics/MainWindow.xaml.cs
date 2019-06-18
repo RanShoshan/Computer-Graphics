@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -520,11 +521,13 @@ namespace ComputerGraphics {
             //reload original positions
             parser.ParseFile(currentWorkingFile);
 
+            List<MyPolygon> projectedPolygons = new List<MyPolygon>();
+
             for (int i = 0; i < parser.polygonList.Count; i++) {
-                parser.polygonList[i].PerformProjection(type);
+                projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
 
-            DrawPolygons(parser.polygonList);
+            DrawPolygons(projectedPolygons);
 
         }
 
@@ -554,6 +557,8 @@ namespace ComputerGraphics {
         }
 
         private void DrawPolygons(List<MyPolygon> polygonList) {
+
+
             foreach (var polygon in polygonList) {
                 var newPoly = new Polygon {
                     Stroke = Brushes.Black,
@@ -568,7 +573,7 @@ namespace ComputerGraphics {
                         polygon.poly.Points[i].Y + Height/ 2
                         ));
                 }
-                
+
                 //draw polygon on canvas:
                 myCanvas.Children.Add(newPoly);
             }            
@@ -631,11 +636,15 @@ namespace ComputerGraphics {
                 }
             }
 
+            List<MyPolygon> projectedPolygons = new List<MyPolygon>();
+
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 parser.polygonList[i].Rotate(axis, angle);
+                projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
 
-            DrawPolygons(parser.polygonList);
+
+            DrawPolygons(projectedPolygons);
 
         }
 
@@ -886,7 +895,6 @@ namespace ComputerGraphics {
             if(myCanvas != null) {
                 DrawProjection();
                 OnBtnApplyScalingClicked(null, null);
-
             }
         }
 

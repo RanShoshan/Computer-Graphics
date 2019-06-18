@@ -10,10 +10,10 @@ namespace ComputerGraphics {
     static class Transformations {
 
         public static readonly Point3D shapesMiddlePt = new Point3D(100.0, -100.0, -50.0);
-        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -300.0);
+        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -1000.0);
 
         //min and max values for Z axis distance (artificial) on screen:
-        public static readonly Point zDistanceMinMax = new Point(-500.0, 500.0);
+        public static readonly Point zDistanceMinMax = new Point(-1000.0, 1000.0);
 
 
         public static Point screen;
@@ -70,6 +70,7 @@ namespace ComputerGraphics {
                 { 0, -sin, cos, 0 },
                 { 0, 0, 0, 1 }
             };
+
             return mtx;
         }
 
@@ -165,7 +166,7 @@ namespace ComputerGraphics {
                 { 0, 0, 0, 0 }, 
                 { 0, 0, 0, 1 }
             };
-            
+
             //resulted processed matrix
             double[,] processedMtx = MtxHelper.MtxMultiply(baseVertexMtx, perspectiveMtx);
             return new Point3D(processedMtx[0, 0], processedMtx[0, 1], processedMtx[0, 2]);
