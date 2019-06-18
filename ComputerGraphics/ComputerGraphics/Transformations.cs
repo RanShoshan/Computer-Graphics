@@ -104,6 +104,40 @@ namespace ComputerGraphics {
         }
 
 
+        internal static Point3D Transition(Point3D vertex, Axis axis, double value) {
+
+            //base matrix representation of our vertex:
+            double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
+
+            //post transition processed matrix:
+            double[,] transitionedMtx = MtxHelper.MtxMultiply(baseVertexMtx, TransitioningMatrix(axis,value));
+
+            //return new rotated 3d point:
+            return new Point3D(transitionedMtx[0, 0], transitionedMtx[0, 1], transitionedMtx[0, 2]);
+        }
+
+        public static double[,] TransitioningMatrix(Axis axis, double value) {
+
+            Point3D pt = new Point3D(1.0,1.0,1.0);
+            switch (axis) {
+                case Axis.X: pt.X = value; break;
+                case Axis.Y: pt.Y = value; break;
+                case Axis.Z: pt.Z = value; break;
+            }
+
+            //the transition matrix
+            double[,] transitionMtx = {
+                { 1, 0, 0, 0 },
+                { 0, 1, 0, 0 },
+                { 0, 0, 1, 0 },
+                { pt.X, pt.Y, pt.Z, 1 }
+            };
+            return transitionMtx;
+        }
+
+
+
+
         //projections implementation:
         //orthographic:
         public static Point3D Orthographic(Point3D vertex) {

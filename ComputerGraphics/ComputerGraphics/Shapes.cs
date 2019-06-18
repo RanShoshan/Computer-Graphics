@@ -62,6 +62,15 @@ namespace ComputerGraphics {
             poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
         }
 
+        internal void Transition(Axis axis, double value) {
+            var newVertextes = new List<Point3D>();
+            foreach (var vertex in vertexes) {
+                newVertextes.Add(Transformations.Transition(vertex, axis, value));
+            }
+            vertexes = newVertextes;
+            poly.Points = ShapesHelper.BuildPointCollection(newVertextes);
+        }
+
         internal MyPolygon PerformProjection(ProjectionType type) {
             var newVertextes = new List<Point3D>();
             
@@ -87,6 +96,21 @@ namespace ComputerGraphics {
             return new MyPolygon(newPoly, newVertextes, newVertexIndexes);
         }
 
+        internal bool PredictTransitionValidity(Axis axis, double transValue, double min, double max) {
+            foreach (var pt in poly.Points) {
+                var comparableValue = 0.0;
+                switch (axis) {
+                    case Axis.X: comparableValue = pt.X; break;
+                    case Axis.Y: comparableValue = pt.Y; break;
+                }
+
+                if(comparableValue + transValue > max || comparableValue - transValue < min) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
 }

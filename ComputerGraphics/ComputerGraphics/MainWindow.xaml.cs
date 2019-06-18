@@ -211,6 +211,66 @@ namespace ComputerGraphics {
 
         public void OnBtnApplyTransitionClicked(object sender, RoutedEventArgs e) {
 
+
+
+            var axis = Axis.X;
+            var value = Double.Parse(TransitionValueTb.Text);
+
+            foreach (RadioButton radioBtn in TransitionGrpPanel.Children) {
+                if (radioBtn.IsChecked == true) {
+                    axis = GetAxis(radioBtn);
+                    break;
+                }
+            }
+
+            if (!IsValidTransitionValue(axis, value)) {
+                return;
+            }
+            else {
+                //clear canvas
+                Clear(false);
+            }
+
+            List<MyPolygon> projectedPolygons = new List<MyPolygon>();
+            for (int i = 0; i < parser.polygonList.Count; i++) {
+                parser.polygonList[i].Transition(axis, value);
+                projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
+            }
+            DrawPolygons(projectedPolygons);
+
+        }
+
+        private bool IsValidTransitionValue(Axis axis, double value) {
+            double min = 0.0;
+            double max = 0.0;
+            GetAxisMinMaxValues(axis, ref min, ref max);
+            foreach (var poly in parser.polygonList) {
+                if (!poly.PredictTransitionValidity(axis, value, min, max)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void GetAxisMinMaxValues(Axis axis, ref double min, ref double max) {
+            var toolBarOffset = 180.0;
+            var invisOffset = 200.0;
+
+            switch (axis) {
+                case Axis.X:
+                    min = -((Width) / 2) +invisOffset;     //max x on screen before offset addition
+                    max = min * (-1);       //max x on screen before offset addition
+                    break;
+                case Axis.Y:
+                    min = -(Height / 2) + toolBarOffset;    //min y on screen before offset addition
+                    max = min * (-1);                       //max y on screen before offset addition
+                    break;
+                case Axis.Z:
+                    min = Transformations.zDistanceMinMax.X;    //min z 
+                    max = Transformations.zDistanceMinMax.Y;    //max z
+                    break;
+            }
+
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
