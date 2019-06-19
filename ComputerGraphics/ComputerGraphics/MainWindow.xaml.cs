@@ -104,7 +104,6 @@ namespace ComputerGraphics {
         private void InitPolygons() {
             parser.CreatePolygonsFromConfiguration();
             DrawPolygons(parser.polygonList);
-            DrawShapesFromFile(parser);
         }
 
         private void DrawProjection() {
@@ -384,7 +383,6 @@ namespace ComputerGraphics {
             Console.WriteLine("OnProjectionChanged");
             if(myCanvas != null) {
                 DrawProjection();
-                OnBtnApplyScalingClicked(null, null);
             }
         }
 
