@@ -79,6 +79,19 @@
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
 
+                <ToggleButton 
+                    x:Name="showHiddenSurfaceCb" 
+                    Content="Hide invisible surfaces"
+                    FontSize="20"
+                    Padding="5,5,5,5"
+                    BorderBrush="Black"
+                    BorderThickness="3"
+                    Click="OnDeepSurfaceBtnClicked"
+                    />
+                
+                <!--spacing component-->
+                <Label Padding="15" Visibility="Hidden"/>
+
                 <Border x:Name="UserNotificationBorder" BorderThickness="1" BorderBrush="Black" Visibility="Hidden">
                     <TextBlock 
                     x:Name="UserNotification" 

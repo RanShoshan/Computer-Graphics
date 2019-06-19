@@ -43,6 +43,7 @@ namespace ComputerGraphics {
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
             PublishOffset();
             InitPolygons();
+            showHiddenSurfaceCb.IsChecked = true;
         }
 
         private void PublishOffset() {
@@ -386,5 +387,14 @@ namespace ComputerGraphics {
             }
         }
 
+        private void OnDeepSurfaceBtnClicked(object sender, RoutedEventArgs e) {
+            if(showHiddenSurfaceCb.IsChecked == true) {
+                showHiddenSurfaceCb.Content = "Hide invisible surfaces";
+            }
+            else {
+                showHiddenSurfaceCb.Content = "Show invisible surfaces";
+            }
+            DrawProjection();
+        }
     }
 }
