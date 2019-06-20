@@ -10,11 +10,10 @@ namespace ComputerGraphics {
     static class Transformations {
 
         public static readonly Point3D shapesMiddlePt = new Point3D(100.0, -100.0, -50.0);
-        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -300.0);
+        public static readonly Point3D userPov = new Point3D(0.0, 0.0, -1000.0);
 
         //min and max values for Z axis distance (artificial) on screen:
-        public static readonly Point zDistanceMinMax = new Point(-500.0, 500.0);
-
+        public static readonly Point zDistanceMinMax = new Point(-1000.0, 1000.0);
 
         public static Point screen;
 
@@ -30,8 +29,8 @@ namespace ComputerGraphics {
             var yCenter = Math.Abs(screen.Y / 2);
             var zCenter = Math.Abs(zDistanceMinMax.X - zDistanceMinMax.Y) / 2;
 
-            //our distance vector
-            double[] distanceVector = { xCenter, yCenter, zCenter };
+            //our distance vector - we need this?
+            //double[] distanceVector = { xCenter, yCenter, zCenter };
 
             //base matrix representation of our vertex:
             double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
@@ -70,6 +69,7 @@ namespace ComputerGraphics {
                 { 0, -sin, cos, 0 },
                 { 0, 0, 0, 1 }
             };
+
             return mtx;
         }
 
@@ -102,6 +102,40 @@ namespace ComputerGraphics {
             };
             return mtx;
         }
+
+
+        internal static Point3D Transition(Point3D vertex, Axis axis, double value) {
+
+            //base matrix representation of our vertex:
+            double[,] baseVertexMtx = { { vertex.X, vertex.Y, vertex.Z, 1 } };
+
+            //post transition processed matrix:
+            double[,] transitionedMtx = MtxHelper.MtxMultiply(baseVertexMtx, TransitioningMatrix(axis,value));
+
+            //return new rotated 3d point:
+            return new Point3D(transitionedMtx[0, 0], transitionedMtx[0, 1], transitionedMtx[0, 2]);
+        }
+
+        public static double[,] TransitioningMatrix(Axis axis, double value) {
+
+            Point3D pt = new Point3D(1.0,1.0,1.0);
+            switch (axis) {
+                case Axis.X: pt.X = value; break;
+                case Axis.Y: pt.Y = value; break;
+                case Axis.Z: pt.Z = value; break;
+            }
+
+            //the transition matrix
+            double[,] transitionMtx = {
+                { 1, 0, 0, 0 },
+                { 0, 1, 0, 0 },
+                { 0, 0, 1, 0 },
+                { pt.X, pt.Y, pt.Z, 1 }
+            };
+            return transitionMtx;
+        }
+
+
 
 
         //projections implementation:
@@ -165,7 +199,7 @@ namespace ComputerGraphics {
                 { 0, 0, 0, 0 }, 
                 { 0, 0, 0, 1 }
             };
-            
+
             //resulted processed matrix
             double[,] processedMtx = MtxHelper.MtxMultiply(baseVertexMtx, perspectiveMtx);
             return new Point3D(processedMtx[0, 0], processedMtx[0, 1], processedMtx[0, 2]);

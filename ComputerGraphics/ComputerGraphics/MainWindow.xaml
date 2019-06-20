@@ -9,9 +9,6 @@
         <ToolBarTray DockPanel.Dock="Top" Background="AntiqueWhite" Orientation="Horizontal">
             <ToolBar x:Name="mainToolbar" Background="AntiqueWhite" Padding="0">
                 <Button Content="Clear" Click="OnBtnClearClicked" Padding="10" FontSize="25"/>
-                <!--<Button Content="Save" Click="OnBtnSaveClicked" Padding="10"/>-->
-                <Button Content="Load" Click="OnBtnLoadClicked" Padding="10" FontSize="25"/>
-
                 <Button Click="OnBtnHelpClicked" Padding="5" >
                     <Button.Content>
                         <TextBlock FontSize="25"><Bold>Help</Bold></TextBlock>
@@ -74,7 +71,7 @@
                 <StackPanel>
                     <Label Content="Scaling" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
-                    <TextBox x:Name="ScalingValueTb" Text="1"/>
+                    <TextBox x:Name="ScalingValueTb" Text="1.2"/>
                     <RadioButton Visibility="Hidden" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" />
                     <Button x:Name="BtnApplyScaling" Content="Apply" Click="OnBtnApplyScalingClicked"/>
                 </StackPanel>
@@ -92,89 +89,11 @@
                     Margin="0,30,0,0"
                     TextAlignment="Center"/>
                 </Border>
-
-                <ToggleButton  x:Name="btnLine" Click="OnBtnLineClicked" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/line.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnCircle"  Click="OnBtnCircleClicked" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/circle.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnBizier" Click="OnBtnBezierClicked" ToolTip="draw a Bezier curve" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/bizier.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <TextBox x:Name="tbBezierNumOfLines" Width="38" Height="31" Text="30" Visibility="Hidden"/>
-                <ToggleButton x:Name="btnMove" Click="OnBtnMoveClicked" ToolTip="Move shape in cavnas borders" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/move.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnScaleUp" Click="OnBtnScaleUpClicked" ToolTip="Scale shapes up" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/scale_up.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnScaleDown" Click="OnBtnScaleDownClicked" ToolTip="Scale shapes down" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/scale_down.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnStrechX" Click="OnBtnStrechXClicked" ToolTip="Shear shape over the X axis" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/strech_x.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnStrechY" Click="OnBtnStrechYClicked" ToolTip="Shear shape over the Y axis" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/strech_y.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnMirrorX" Click="OnMirrorBtnXClick" ToolTip="Mirror shape over the X axis" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/mirror_x.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnMirrorY" Click="OnMirrorBtnYClick" ToolTip="Mirror shape over the Y axis" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/mirror_y.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <ToggleButton x:Name="btnRotate" Click="OnBtnRotateClicked" ToolTip="Rotate shape clockwise or counter-clockwise" Visibility="Hidden">
-                    <Image 
-						Source="pack://application:,,,/icons/rotate.png" 
-						Height="30" 
-						Width="30"/>
-                </ToggleButton>
-                <TextBox x:Name="tbRotateDegrees" Width="38" Height="31" Text="-45" ToolTip="rotation degrees (can be negative)" Visibility="Hidden"/>
             </ToolBar>
         </ToolBarTray>
         <TextBox AcceptsReturn="True" />
 
-        <Canvas Background="White" x:Name="myCanvas" MouseDown="OnCanvasMouseDown">
-            <Button Content="" 
-                        x:Name="anchorPointBtn"
-                        Width="10"
-                        Height="10"
-                        Background="DarkOrange"
-                        PreviewMouseDown="OnAnchorPointBtnMouseDown" 
-                        PreviewMouseUp="OnAnchorPointBtnMouseUp" 
-                        PreviewMouseMove="OnAnchorPointBtnDrag"
-                        Visibility="Hidden"/>
+        <Canvas Background="White" x:Name="myCanvas">
             <TextBlock  
                        x:Name="helpWindow"
                        Background="Beige" 

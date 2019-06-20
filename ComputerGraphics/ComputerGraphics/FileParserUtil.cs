@@ -28,23 +28,19 @@ namespace ComputerGraphics {
     //Parser util - reads shape values from configuration file and creates matching objects
     class FileParserUtil {
         
-        public readonly List<Bezier> bezierList = new List<Bezier>();
-        public readonly List<Circle> circleList = new List<Circle>();
-        public readonly List<MyLine> lineList = new List<MyLine>();
         public readonly List<Point3D> vertexList = new List<Point3D>();
         public readonly List<MyPolygon> polygonList = new List<MyPolygon>();
 
         public static readonly char delimiter = ',';
     
         //Parse the file according to our format
-        public void ParseFile(string fileName) {
+        public void CreatePolygonsFromConfiguration() {
 
             var shapeName = ShapeName.NONE;
-            string[] full_file = File.ReadAllLines(fileName);
-            List<string> lines = new List<string>();
-            lines.AddRange(full_file);
-            for (int i = 0; i < lines.Count; i++) {
-                if(GetShapeName(lines[i]) != ShapeName.NONE) {
+            var lines = polygonListConfig.Split('\n');
+
+            for (int i = 0; i < lines.Length-1; i++) {
+                if (GetShapeName(lines[i]) != ShapeName.NONE) {
                     shapeName = GetShapeName(lines[i]);
                     continue;
                 }
@@ -55,15 +51,6 @@ namespace ComputerGraphics {
         //Create and add new objects according to their matching shape type
         private void AddShapeToList(ShapeName shapeName, string[] vals) {
             switch (shapeName) {
-                case ShapeName.LINE:
-                    AddLineToList(vals);
-                    break;
-                case ShapeName.CIRCLE:
-                    AddCircleToList(vals);
-                    break;
-                case ShapeName.BEZIER:
-                    AddBezierToList(vals);
-                    break;
                 case ShapeName.VERTEX:
                     AddVertexToList(vals);
                     break;
@@ -93,20 +80,6 @@ namespace ComputerGraphics {
                 Double.Parse(vals[0]), Double.Parse(vals[1]), Double.Parse(vals[2])));
         }
 
-        private void AddBezierToList(string[] vals) {
-            bezierList.Add(new Bezier(
-                vals[0], vals[1], vals[2], vals[3],
-                vals[4], vals[5], vals[6], vals[7]));
-        }
-
-        private void AddCircleToList(string[] vals) {
-            circleList.Add(new Circle(vals[0], vals[1], vals[2], vals[3]));
-        }
-
-        private void AddLineToList(string[] vals) {
-            lineList.Add(new MyLine(vals[0], vals[1], vals[2], vals[3]));
-        }
-
         private ShapeName GetShapeName(string v) {
             if (v.Contains(ShapeName.VERTEX.ToString())) {
                 return ShapeName.VERTEX;
@@ -114,25 +87,41 @@ namespace ComputerGraphics {
             if (v.Contains(ShapeName.POLYGON.ToString())) {
                 return ShapeName.POLYGON;
             }
-            if (v.Contains(ShapeName.LINE.ToString())) {
-                return ShapeName.LINE;
-            }
-            if (v.Contains(ShapeName.CIRCLE.ToString())) {
-                return ShapeName.CIRCLE;
-            }
-            if (v.Contains(ShapeName.BEZIER.ToString())) {
-                return ShapeName.BEZIER;
-            }
             return ShapeName.NONE;
         }
 
         //Clear lists
         internal void ClearCache() {
-            lineList.Clear();
-            circleList.Clear();
-            bezierList.Clear();
             polygonList.Clear();
         }
 
+        private string polygonListConfig = 
+            "VERTEX:\n"+
+            "-200.0,-50.0,-50.0\n"+
+            "-100.0,-50.0,-50.0\n"+
+            "-200.0,50.0,-50.0\n"+
+            "-100.0,50.0,-50.0\n"+
+            "-200.0,-50.0,50.0\n"+
+            "-100.0,-50.0,50.0\n"+
+            "-200.0,50.0,50.0\n"+
+            "-100.0,50.0,50.0\n"+
+            "175.0,-75.0,1.0\n"+
+            "250.0,0.0,1.0\n"+
+            "175.0,0.0,-75.0\n"+
+            "100.0,0.0,1.0\n"+
+            "175.0,0.0,75.0\n"+
+            "175.0,75.0,1.0\n"+
+            "POLYGON:\n"+
+            "0,1,3,2\n"+
+            "1,5,7,3\n"+
+            "2,3,7,6\n"+
+            "4,0,2,6\n"+
+            "5,4,6,7\n"+
+            "0,4,5,1\n"+
+            "8,9,10\n"+
+            "11,8,10\n"+
+            "10,9,13\n"+
+            "11,10,13\n"+
+            "11,10,9,8\n";
     }
 }
