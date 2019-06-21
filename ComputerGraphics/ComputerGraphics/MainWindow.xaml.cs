@@ -36,6 +36,7 @@ namespace ComputerGraphics {
         private FileParserUtil parser = new FileParserUtil();
         private readonly char delim = FileParserUtil.delimiter;
         private bool showInvisibleSurface = true;
+        private double totalScaledValue = 1.0;
 
         public MainWindow() {
             InitializeComponent();
@@ -118,6 +119,7 @@ namespace ComputerGraphics {
                 Clear();
                 //reload original positions
                 parser.CreatePolygonsFromConfiguration();
+                ScaleShapes(totalScaledValue, false);
             }
 
             FillPolygons();
@@ -126,19 +128,7 @@ namespace ComputerGraphics {
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
-
-            Console.WriteLine("===========================BEFORE SORT======================");
-            for (int i = 0; i < projectedPolygons.Count; i++) {
-                Console.WriteLine(projectedPolygons[i].GetMaxZ(projectedPolygons[i].vertexes));
-            }
-
             projectedPolygons.Sort(); //deep sort by Z axis
-
-            Console.WriteLine("===========================AFTER SORT======================");
-            for (int i = 0; i < projectedPolygons.Count; i++) {
-                Console.WriteLine(projectedPolygons[i].GetMaxZ(projectedPolygons[i].vertexes));
-            }
-
             DrawPolygons(projectedPolygons);
 
         }
@@ -285,10 +275,19 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+            var scaleValue = Double.Parse(ScalingValueTb.Text);
+            ScaleShapes(scaleValue);
+
+        }
+
+        private void ScaleShapes(double scaleValue, bool updateTotalScaledValue = true) {
             //clear canvas
             Clear(false);
 
-            var scaleValue = Double.Parse(ScalingValueTb.Text);
+
+            if (updateTotalScaledValue) {
+                UpdateTotalScaledValue(scaleValue);
+            }
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
@@ -301,6 +300,11 @@ namespace ComputerGraphics {
             }
 
             DrawPolygons(projectedPolygons);
+        }
+
+        private void UpdateTotalScaledValue(double scaleValue) {
+            totalScaledValue *= scaleValue;
+            Console.WriteLine("totalScaledValue : " + totalScaledValue);
         }
 
         private bool ShapesOutOfBordersAfterScaling() {
