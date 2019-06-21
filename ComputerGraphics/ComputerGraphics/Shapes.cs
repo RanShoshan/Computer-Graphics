@@ -120,7 +120,7 @@ namespace ComputerGraphics {
                     case Axis.Y: comparableValue = pt.Y; break;
                 }
 
-                if(comparableValue + transValue > max || comparableValue - transValue < min) {
+                if(comparableValue + transValue > max || comparableValue + transValue < min) {
                     return false;
                 }
             }

@@ -56,7 +56,7 @@
                 <StackPanel x:Name="TransitionGrp">
                     <Label Content="Transition" FontSize="20" HorizontalAlignment="Center"/>
                     <Slider Visibility="Hidden"/>
-                    <TextBox x:Name="TransitionValueTb" Text="0"/>
+                    <TextBox x:Name="TransitionValueTb" TextChanged="OnTransitionValueInputTextChanged" Text="0"/>
                     <StackPanel x:Name="TransitionGrpPanel" HorizontalAlignment="Center" Orientation="Horizontal">
                         <RadioButton GroupName="TransitionGrp" Content="X" Padding="5,0,10,0" HorizontalAlignment="Left" IsChecked="True"/>
                         <RadioButton GroupName="TransitionGrp" Content="Y" Padding="5,0,10,0" HorizontalAlignment="Left"/>

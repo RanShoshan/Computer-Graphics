@@ -57,7 +57,7 @@ namespace ComputerGraphics {
 
         //Clear canvas, free memory, reset state of buttons, clear temp tracking file
         public void Clear(bool clearCache = true, bool resetState = true) {
-           
+            DisplayIllegalValueNotificiation("", false);
             ToggleOffAllButtons(null, resetState);
             ReattachHelperButtons();
 
@@ -174,7 +174,6 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
-            
             //clear canvas
             Clear(false);
 
@@ -247,6 +246,7 @@ namespace ComputerGraphics {
             GetAxisMinMaxValues(axis, ref min, ref max);
             foreach (var poly in parser.polygonList) {
                 if (!poly.PredictTransitionValidity(axis, value, min, max)) {
+                    DisplayIllegalValueNotificiation("Operation failed! transition was too high and went out of screen borders.", true);
                     return false;
                 }
             }
@@ -254,8 +254,8 @@ namespace ComputerGraphics {
         }
 
         private void GetAxisMinMaxValues(Axis axis, ref double min, ref double max) {
-            var toolBarOffset = 180.0;
-            var invisOffset = 200.0;
+            var toolBarOffset = 50.0;
+            var invisOffset = 50.0;
 
             switch (axis) {
                 case Axis.X:
@@ -275,6 +275,7 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+            DisplayIllegalValueNotificiation("", false);
             var scaleValue = Double.Parse(ScalingValueTb.Text);
             ScaleShapes(scaleValue);
 
@@ -320,7 +321,33 @@ namespace ComputerGraphics {
 
         private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             var slider = sender as Slider;
+            DisplayIllegalValueNotificiation();
             RotationValueTb.Text = slider.Value.ToString();
+        }
+
+
+        //validate legal angle value on input entered
+        private void OnTransitionValueInputTextChanged(object sender, TextChangedEventArgs args) {
+            var MAX_VALUE_DIGITS = 4;
+            var textBox = sender as TextBox;
+            var illegalInputMsg = "Input should only contain \nnumbers between " + Width * (-1) + " and " + Width + "!";
+
+            Regex negRgx = new Regex(@"^-[0-9]+$");
+            Regex posRgx = new Regex(@"^[0-9]+$");
+
+            Match negMatch = negRgx.Match(TransitionValueTb.Text);
+            Match posMatch = posRgx.Match(TransitionValueTb.Text);
+
+            DisplayIllegalValueNotificiation(null, false);
+
+            if (!posMatch.Success && !negMatch.Success) {
+                Console.WriteLine("OnTransitionValueInputTextChanged.");
+                DisplayIllegalValueNotificiation(illegalInputMsg, true);
+                if (TransitionValueTb.Text.Length > 0 && !TransitionValueTb.Text.Contains("-")) {
+                    TransitionValueTb.Text = TransitionValueTb.Text.Substring(0, TransitionValueTb.Text.Length - 1);
+                }
+            }
+
         }
 
         //validate legal angle value on input entered
@@ -348,7 +375,6 @@ namespace ComputerGraphics {
 
             //negative angle
             if (negMatch.Success) {
-                Console.WriteLine("negMatch.");
                 angleValue = Double.Parse(RotationValueTb.Text.Replace("-", ""));
                 if (IsInValidRange(angleValue)) {
                     RotationSlider.Value = angleValue * -1;
@@ -360,7 +386,6 @@ namespace ComputerGraphics {
             }
             //positive angle
             else if (posMatch.Success) {
-                Console.WriteLine("posMatch.");
                 angleValue = Double.Parse(RotationValueTb.Text);
                 if (IsInValidRange(angleValue)) {
                     RotationSlider.Value = angleValue;
@@ -373,7 +398,6 @@ namespace ComputerGraphics {
             //illegal input
             else {
                 if (textBox.Text != "-") {
-                    Console.WriteLine("illegal input");
                     textBox.Text = "";
                     DisplayIllegalValueNotificiation(illegalInputMsg);
                 }
@@ -396,6 +420,7 @@ namespace ComputerGraphics {
 
         //display or hide help windows on toggle
         public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
+            DisplayIllegalValueNotificiation("",false);
             helpWindow.Visibility = helpWindow.IsVisible ? Visibility.Hidden : Visibility.Visible;
         }
 
