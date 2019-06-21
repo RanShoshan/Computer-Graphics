@@ -51,6 +51,7 @@ namespace ComputerGraphics {
             return maxZ;
         }
 
+        //comparing function for deep sorting
         public int CompareTo(MyPolygon p2) {
             var p1MaxZ = GetMaxZ(this.vertexes);
             var p2MaxZ = GetMaxZ(p2.vertexes);
@@ -110,6 +111,7 @@ namespace ComputerGraphics {
             return new MyPolygon(newPoly, newVertextes, newVertexIndexes);
         }
 
+        //make sure transitioin operations are restricted to canvas boundaries
         internal bool PredictTransitionValidity(Axis axis, double transValue, double min, double max) {
             foreach (var pt in poly.Points) {
                 var comparableValue = 0.0;

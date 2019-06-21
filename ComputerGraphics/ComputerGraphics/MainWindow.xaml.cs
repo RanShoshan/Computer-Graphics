@@ -284,10 +284,10 @@ namespace ComputerGraphics {
             //clear canvas
             Clear(false);
 
-
             if (updateTotalScaledValue) {
                 UpdateTotalScaledValue(scaleValue);
             }
+
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
@@ -302,6 +302,7 @@ namespace ComputerGraphics {
             DrawPolygons(projectedPolygons);
         }
 
+        //save total scaled value to keep correct size when swapping views
         private void UpdateTotalScaledValue(double scaleValue) {
             totalScaledValue *= scaleValue;
             Console.WriteLine("totalScaledValue : " + totalScaledValue);
@@ -380,6 +381,7 @@ namespace ComputerGraphics {
             return;
         }
 
+        //notification msg on illegal operation from user, such as wrong input:
         private void DisplayIllegalValueNotificiation(string msg = "", bool display = true) {
             if (UserNotificationBorder != null && UserNotification != null) {
                 UserNotificationBorder.Visibility = display ? Visibility.Visible : Visibility.Hidden;
@@ -387,10 +389,12 @@ namespace ComputerGraphics {
             }
         }
 
+        //angle value range validity
         private bool IsInValidRange(double angleValue) {
             return angleValue >= 0 && angleValue <= 360;
         }
 
+        //display or hide help windows on toggle
         public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
             helpWindow.Visibility = helpWindow.IsVisible ? Visibility.Hidden : Visibility.Visible;
         }
@@ -417,6 +421,7 @@ namespace ComputerGraphics {
             DrawProjection(false);
         }
 
+        //fill polygons with solid or transperant color according to configuration:
         private void FillPolygons(bool? forceFill = null) {
             var transperentPoly = new Polygon();
 
