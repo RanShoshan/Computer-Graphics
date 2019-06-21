@@ -7,6 +7,10 @@ using System.Windows;
 using System.Windows.Media.Media3D;
 
 namespace ComputerGraphics {
+    /* 
+     * This module implements all of the required transformations: Rotation, Scaling, Transition
+     * Also includes the Matrix utility functions.
+     */
     static class Transformations {
 
         public static readonly Point3D shapesMiddlePt = new Point3D(100.0, -100.0, -50.0);
@@ -207,7 +211,7 @@ namespace ComputerGraphics {
 
     }
 
-    //used fot matrix to matrix calculation etc:
+    //used for matrix to matrix calculation operations, such as multiply:
     internal static class MtxHelper {
 
         public static double[,] MtxMultiply(double[,] A, double[,] B) {
