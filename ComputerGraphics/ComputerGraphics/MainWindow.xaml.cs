@@ -35,6 +35,7 @@ namespace ComputerGraphics {
         public const int STROKE_BOLD = 10;
         private FileParserUtil parser = new FileParserUtil();
         private readonly char delim = FileParserUtil.delimiter;
+        private bool showInvisibleSurface = true;
 
         public MainWindow() {
             InitializeComponent();
@@ -43,7 +44,6 @@ namespace ComputerGraphics {
             this.Height = System.Windows.SystemParameters.VirtualScreenHeight;
             PublishOffset();
             InitPolygons();
-            showHiddenSurfaceCb.IsChecked = true;
         }
 
         private void PublishOffset() {
@@ -104,24 +104,39 @@ namespace ComputerGraphics {
 
         private void InitPolygons() {
             parser.CreatePolygonsFromConfiguration();
-            DrawPolygons(parser.polygonList);
+            DrawProjection();
         }
 
-        private void DrawProjection() {
+        private void DrawProjection(bool resetPolygons = true) {
 
             //get the projection type from the gui radio buttons
             var type = GetProjectionType();
 
-            //clear canvas
-            Clear();
 
-            //reload original positions
-            parser.CreatePolygonsFromConfiguration();
+            if (resetPolygons) {
+                //clear canvas
+                Clear();
+                //reload original positions
+                parser.CreatePolygonsFromConfiguration();
+            }
 
+            FillPolygons();
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
+            }
+
+            Console.WriteLine("===========================BEFORE SORT======================");
+            for (int i = 0; i < projectedPolygons.Count; i++) {
+                Console.WriteLine(projectedPolygons[i].GetMaxZ(projectedPolygons[i].vertexes));
+            }
+
+            projectedPolygons.Sort(); //deep sort by Z axis
+
+            Console.WriteLine("===========================AFTER SORT======================");
+            for (int i = 0; i < projectedPolygons.Count; i++) {
+                Console.WriteLine(projectedPolygons[i].GetMaxZ(projectedPolygons[i].vertexes));
             }
 
             DrawPolygons(projectedPolygons);
@@ -145,14 +160,8 @@ namespace ComputerGraphics {
             return ProjectionType.ORTHOGRAPHIC;
         }
 
-
-        //draw all shapes from the current working file
-        private void DrawShapesFromFile(FileParserUtil parser) {
-            DrawPolygons(parser.polygonList);
-        }
-
         private void DrawPolygons(List<MyPolygon> polygonList) {
-
+            polygonList.Sort();
             foreach (var polygon in polygonList) {
                 var newPoly = new Polygon {
                     Stroke = Brushes.Black,
@@ -162,6 +171,7 @@ namespace ComputerGraphics {
 
                 //create new point collection with calculated offset before drawing on canvas:
                 for(int i=0; i < polygon.poly.Points.Count ; i++) {
+                    newPoly.Fill = polygon.poly.Fill;
                     newPoly.Points.Add(new Point(
                         polygon.poly.Points[i].X + Width / 2,
                         polygon.poly.Points[i].Y + Height/ 2
@@ -192,6 +202,7 @@ namespace ComputerGraphics {
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 parser.polygonList[i].Rotate(axis, angle);
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
+                projectedPolygons.Sort(); //deep sort by Z axis
             }
             DrawPolygons(projectedPolygons);
 
@@ -381,20 +392,46 @@ namespace ComputerGraphics {
         }
 
         private void OnProjectionChanged(object sender, RoutedEventArgs e) {
-            Console.WriteLine("OnProjectionChanged");
             if(myCanvas != null) {
                 DrawProjection();
             }
         }
 
-        private void OnDeepSurfaceBtnClicked(object sender, RoutedEventArgs e) {
-            if(showHiddenSurfaceCb.IsChecked == true) {
+        private void OnInvisSurfaceBtnClicked(object sender, RoutedEventArgs e) {
+
+            if(showHiddenSurfaceCb.Content.ToString().Contains("Show")) {
+                Console.WriteLine("OnDeepSurfaceBtnClicked with Show");
+
                 showHiddenSurfaceCb.Content = "Hide invisible surfaces";
+                showInvisibleSurface = true;
             }
             else {
                 showHiddenSurfaceCb.Content = "Show invisible surfaces";
+                Console.WriteLine("OnDeepSurfaceBtnClicked with Hide");
+                showInvisibleSurface = false;
             }
-            DrawProjection();
+            DrawProjection(false);
         }
+
+        private void FillPolygons(bool? forceFill = null) {
+            var transperentPoly = new Polygon();
+
+            if(!(forceFill == null)) {
+                showInvisibleSurface = forceFill.Value;
+            }
+
+            Console.WriteLine("FillPolygons : " + showInvisibleSurface);
+            foreach (var myPoly in parser.polygonList) {
+                if (showInvisibleSurface) {
+                    myPoly.poly.Fill = transperentPoly.Fill;
+                }
+                else {
+                    myPoly.poly.Fill = Brushes.AliceBlue;
+                }
+            }
+        }
+
+
+
     }
 }

@@ -46,6 +46,7 @@ namespace ComputerGraphics {
                 }
                 AddShapeToList(shapeName, lines[i].Split(delimiter));
             }
+
         }
 
         //Create and add new objects according to their matching shape type
@@ -94,34 +95,37 @@ namespace ComputerGraphics {
         internal void ClearCache() {
             polygonList.Clear();
         }
-
-        private string polygonListConfig = 
-            "VERTEX:\n"+
-            "-200.0,-50.0,-50.0\n"+
-            "-100.0,-50.0,-50.0\n"+
-            "-200.0,50.0,-50.0\n"+
-            "-100.0,50.0,-50.0\n"+
-            "-200.0,-50.0,50.0\n"+
-            "-100.0,-50.0,50.0\n"+
-            "-200.0,50.0,50.0\n"+
-            "-100.0,50.0,50.0\n"+
-            "175.0,-75.0,1.0\n"+
-            "250.0,0.0,1.0\n"+
-            "175.0,0.0,-75.0\n"+
-            "100.0,0.0,1.0\n"+
-            "175.0,0.0,75.0\n"+
-            "175.0,75.0,1.0\n"+
-            "POLYGON:\n"+
-            "0,1,3,2\n"+
-            "1,5,7,3\n"+
-            "2,3,7,6\n"+
-            "4,0,2,6\n"+
-            "5,4,6,7\n"+
-            "0,4,5,1\n"+
-            "8,9,10\n"+
-            "11,8,10\n"+
-            "10,9,13\n"+
-            "11,10,13\n"+
-            "11,10,9,8\n";
+        
+        private string polygonListConfig =
+            "VERTEX:\n" +
+            //cube vertexes
+            "-200.0,-50.0,-50.0\n" +
+            "-100.0,-50.0,-50.0\n" +
+            "-200.0,50.0,-50.0\n" +
+            "-100.0,50.0,-50.0\n" +
+            "-200.0,-50.0,50.0\n" +
+            "-100.0,-50.0,50.0\n" +
+            "-200.0,50.0,50.0\n" +
+            "-100.0,50.0,50.0\n" +
+            //pyramind vertexes
+            "100.0,50.0,-50.0\n" +
+            "200.0,50.0,-50.0\n" +
+            "100.0,50.0,50.0\n" +
+            "200.0,50.0,50.0\n" +
+            "150.0,-50.0,1.0\n" + //top pyramind vertex
+            "POLYGON:\n" +
+            //cube polygons
+            "0,1,3,2\n" +
+            "1,5,7,3\n" +
+            "2,3,7,6\n" +
+            "4,0,2,6\n" +
+            "5,4,6,7\n" +
+            "0,4,5,1\n" +
+            //pyramind polygons
+            "11,10,8,9\n" + //pyramid base
+            "12,10,11\n" +
+            "12,8,10\n" +
+            "12,8,9\n" +
+            "12,11,9\n";
     }
 }

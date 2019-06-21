@@ -79,14 +79,14 @@
                 <!--spacing component-->
                 <Label Padding="15" Visibility="Hidden"/>
 
-                <ToggleButton 
+                <Button 
                     x:Name="showHiddenSurfaceCb" 
                     Content="Hide invisible surfaces"
                     FontSize="20"
                     Padding="5,5,5,5"
                     BorderBrush="Black"
                     BorderThickness="3"
-                    Click="OnDeepSurfaceBtnClicked"
+                    Click="OnInvisSurfaceBtnClicked"
                     />
                 
                 <!--spacing component-->
