@@ -1,7 +1,7 @@
 ﻿/*
  * ran shoshan 308281575
- * &
  * shay rubach 305687352
+ * yaniv yona 203455266
  */
 
 using System;
@@ -14,24 +14,17 @@ namespace ComputerGraphics {
     public static class MenuHelper {
         public static string MENU_TEXT = 
             "\nGuide:\n" +
-            "1. Load the 'config' file attached along with the.exe\n" +
-            "2. Perform any kind of operation you would like using the following tools:\n" +
-            "(*) note: you can only save after you have loaded the config file (*)\n\n" +
-            "\n\nTools from top to bottom:\n\n\n" +
-            "Clear - clears entire screen\n\n" +
-            "Save - saves the current canvas state to the LOADED file\n\n" +
-            "Load - loads an existing file\n\n" +
-            "Line - select 2 points to draw a line between the two\n\n" +
-            "Circle - select first point to set a center, then second point for a radius from center\n\n" +
-            "Bezier Curve - set number of lines in the below text box and place 4 control points\n\n" +
-            "Move - drag the orange anchor point to trasnform shapes over the canvas\n\n" +
-            "Scale Up - click to scale up all shapes\n\n" +
-            "Scale Down - click to scale down all shapes\n\n" +
-            "Shear on X axis - drag the orange anchor point (left/right) to shear to that point\n\n" +
-            "Shear on Y axis - drag the orange anchor point (up/down) to shear to that point\n\n" +
-            "Mirror on Y axis - click to mirror shapes over Y axis\n\n" +
-            "Mirror on X axis - click to mirror shapes over X axis\n\n" +
-            "Rotate - set the angle (-360 to 360) and drag the orange anchor point to rotate shapes\n\n" +
-            "\n*(You can also hover over the icons to see detailed description)\n";
+            "You can choose between 3 optional views:\n" +
+            "\t - Orthographic view\n" +
+            "\t - Oblique (Cabinet) view\n" +
+            "\t - Perspective view\n\n" +
+            "Available transformations:\n" +
+            "\t - Rotation: choose axis, insert an angle between -360 and 360, press apply\n" +
+            "\t - Transition: choose axis, insert a value, press apply\n" +
+            "\t - Scaling: insert scaling factor and press apply\n" +
+            "\n\n" +
+            "Show/Hide invisible surfaces button:\n" +
+            "Hide or show the 'insivible' surfaces - does not work well at the moment\n\n\n" +
+            "(c) Shay Rubach, Ran Shoshan, Yaniv Yona";
     }
 }

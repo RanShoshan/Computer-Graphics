@@ -1,7 +1,7 @@
 ﻿/*
  * ran shoshan 308281575
- * &
  * shay rubach 305687352
+ * yaniv yona 203455266
  */
 
 using System;
@@ -32,7 +32,7 @@ namespace ComputerGraphics {
         }
     }
 
-    public class MyPolygon {
+    public class MyPolygon : IComparable<MyPolygon> {
         public Polygon poly;
         public List<Point3D> vertexes = new List<Point3D>();
         public int[] vertexIndexes;
@@ -41,6 +41,21 @@ namespace ComputerGraphics {
             this.poly = poly;
             this.vertexes = vertexes;
             this.vertexIndexes = vertexIndexes;
+        }
+
+        public double GetMaxZ(List<Point3D> vertexes) {
+            var maxZ = vertexes[0].Z;
+            foreach (var pt in vertexes) {
+                maxZ = Math.Max(maxZ, pt.Z);
+            }
+            return maxZ;
+        }
+
+        //comparing function for deep sorting
+        public int CompareTo(MyPolygon p2) {
+            var p1MaxZ = GetMaxZ(this.vertexes);
+            var p2MaxZ = GetMaxZ(p2.vertexes);
+            return p1MaxZ.CompareTo(p2MaxZ);
         }
 
         internal void Scale(double scaleValue) {
@@ -90,12 +105,13 @@ namespace ComputerGraphics {
             }
 
             var newVertexIndexes = vertexIndexes;
-            var newPoly = new Polygon { Stroke = Brushes.Black, StrokeThickness = 1};
+            var newPoly = new Polygon { Stroke = Brushes.Black, StrokeThickness = 1, Fill = this.poly.Fill};
             newPoly.Points = ShapesHelper.BuildPointCollection(newVertextes);
 
             return new MyPolygon(newPoly, newVertextes, newVertexIndexes);
         }
 
+        //make sure transitioin operations are restricted to canvas boundaries
         internal bool PredictTransitionValidity(Axis axis, double transValue, double min, double max) {
             foreach (var pt in poly.Points) {
                 var comparableValue = 0.0;
@@ -104,7 +120,7 @@ namespace ComputerGraphics {
                     case Axis.Y: comparableValue = pt.Y; break;
                 }
 
-                if(comparableValue + transValue > max || comparableValue - transValue < min) {
+                if(comparableValue + transValue > max || comparableValue + transValue < min) {
                     return false;
                 }
             }

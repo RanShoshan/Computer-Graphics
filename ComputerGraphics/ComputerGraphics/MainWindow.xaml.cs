@@ -1,7 +1,7 @@
 ﻿/*
  * ran shoshan 308281575
- * &
  * shay rubach 305687352
+ * yaniv yona 203455266
  */
 
 using System;
@@ -35,6 +35,8 @@ namespace ComputerGraphics {
         public const int STROKE_BOLD = 10;
         private FileParserUtil parser = new FileParserUtil();
         private readonly char delim = FileParserUtil.delimiter;
+        private bool showInvisibleSurface = true;
+        private double totalScaledValue = 1.0;
 
         public MainWindow() {
             InitializeComponent();
@@ -55,7 +57,7 @@ namespace ComputerGraphics {
 
         //Clear canvas, free memory, reset state of buttons, clear temp tracking file
         public void Clear(bool clearCache = true, bool resetState = true) {
-           
+            DisplayIllegalValueNotificiation("", false);
             ToggleOffAllButtons(null, resetState);
             ReattachHelperButtons();
 
@@ -103,27 +105,30 @@ namespace ComputerGraphics {
 
         private void InitPolygons() {
             parser.CreatePolygonsFromConfiguration();
-            DrawPolygons(parser.polygonList);
-            DrawShapesFromFile(parser);
+            DrawProjection();
         }
 
-        private void DrawProjection() {
+        private void DrawProjection(bool resetPolygons = true) {
 
             //get the projection type from the gui radio buttons
             var type = GetProjectionType();
 
-            //clear canvas
-            Clear();
 
-            //reload original positions
-            parser.CreatePolygonsFromConfiguration();
+            if (resetPolygons) {
+                //clear canvas
+                Clear();
+                //reload original positions
+                parser.CreatePolygonsFromConfiguration();
+                ScaleShapes(totalScaledValue, false);
+            }
 
+            FillPolygons();
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
             }
-
+            projectedPolygons.Sort(); //deep sort by Z axis
             DrawPolygons(projectedPolygons);
 
         }
@@ -145,14 +150,8 @@ namespace ComputerGraphics {
             return ProjectionType.ORTHOGRAPHIC;
         }
 
-
-        //draw all shapes from the current working file
-        private void DrawShapesFromFile(FileParserUtil parser) {
-            DrawPolygons(parser.polygonList);
-        }
-
         private void DrawPolygons(List<MyPolygon> polygonList) {
-
+            polygonList.Sort();
             foreach (var polygon in polygonList) {
                 var newPoly = new Polygon {
                     Stroke = Brushes.Black,
@@ -162,6 +161,7 @@ namespace ComputerGraphics {
 
                 //create new point collection with calculated offset before drawing on canvas:
                 for(int i=0; i < polygon.poly.Points.Count ; i++) {
+                    newPoly.Fill = polygon.poly.Fill;
                     newPoly.Points.Add(new Point(
                         polygon.poly.Points[i].X + Width / 2,
                         polygon.poly.Points[i].Y + Height/ 2
@@ -174,7 +174,6 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyRotationClicked(object sender, RoutedEventArgs e) {
-            
             //clear canvas
             Clear(false);
 
@@ -192,6 +191,7 @@ namespace ComputerGraphics {
             for (int i = 0; i < parser.polygonList.Count; i++) {
                 parser.polygonList[i].Rotate(axis, angle);
                 projectedPolygons.Add(parser.polygonList[i].PerformProjection(GetProjectionType()));
+                projectedPolygons.Sort(); //deep sort by Z axis
             }
             DrawPolygons(projectedPolygons);
 
@@ -246,6 +246,7 @@ namespace ComputerGraphics {
             GetAxisMinMaxValues(axis, ref min, ref max);
             foreach (var poly in parser.polygonList) {
                 if (!poly.PredictTransitionValidity(axis, value, min, max)) {
+                    DisplayIllegalValueNotificiation("Operation failed! transition was too high and went out of screen borders.", true);
                     return false;
                 }
             }
@@ -253,8 +254,8 @@ namespace ComputerGraphics {
         }
 
         private void GetAxisMinMaxValues(Axis axis, ref double min, ref double max) {
-            var toolBarOffset = 180.0;
-            var invisOffset = 200.0;
+            var toolBarOffset = 50.0;
+            var invisOffset = 50.0;
 
             switch (axis) {
                 case Axis.X:
@@ -274,10 +275,20 @@ namespace ComputerGraphics {
         }
 
         public void OnBtnApplyScalingClicked(object sender, RoutedEventArgs e) {
+            DisplayIllegalValueNotificiation("", false);
+            var scaleValue = Double.Parse(ScalingValueTb.Text);
+            ScaleShapes(scaleValue);
+
+        }
+
+        private void ScaleShapes(double scaleValue, bool updateTotalScaledValue = true) {
             //clear canvas
             Clear(false);
 
-            var scaleValue = Double.Parse(ScalingValueTb.Text);
+            if (updateTotalScaledValue) {
+                UpdateTotalScaledValue(scaleValue);
+            }
+
             List<MyPolygon> projectedPolygons = new List<MyPolygon>();
 
             for (int i = 0; i < parser.polygonList.Count; i++) {
@@ -292,6 +303,12 @@ namespace ComputerGraphics {
             DrawPolygons(projectedPolygons);
         }
 
+        //save total scaled value to keep correct size when swapping views
+        private void UpdateTotalScaledValue(double scaleValue) {
+            totalScaledValue *= scaleValue;
+            Console.WriteLine("totalScaledValue : " + totalScaledValue);
+        }
+
         private bool ShapesOutOfBordersAfterScaling() {
             //todo: validate vertex are in canvas border
             return false;
@@ -304,7 +321,33 @@ namespace ComputerGraphics {
 
         private void OnRotationSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             var slider = sender as Slider;
+            DisplayIllegalValueNotificiation();
             RotationValueTb.Text = slider.Value.ToString();
+        }
+
+
+        //validate legal angle value on input entered
+        private void OnTransitionValueInputTextChanged(object sender, TextChangedEventArgs args) {
+            var MAX_VALUE_DIGITS = 4;
+            var textBox = sender as TextBox;
+            var illegalInputMsg = "Input should only contain \nnumbers between " + Width * (-1) + " and " + Width + "!";
+
+            Regex negRgx = new Regex(@"^-[0-9]+$");
+            Regex posRgx = new Regex(@"^[0-9]+$");
+
+            Match negMatch = negRgx.Match(TransitionValueTb.Text);
+            Match posMatch = posRgx.Match(TransitionValueTb.Text);
+
+            DisplayIllegalValueNotificiation(null, false);
+
+            if (!posMatch.Success && !negMatch.Success) {
+                Console.WriteLine("OnTransitionValueInputTextChanged.");
+                DisplayIllegalValueNotificiation(illegalInputMsg, true);
+                if (TransitionValueTb.Text.Length > 0 && !TransitionValueTb.Text.Contains("-")) {
+                    TransitionValueTb.Text = TransitionValueTb.Text.Substring(0, TransitionValueTb.Text.Length - 1);
+                }
+            }
+
         }
 
         //validate legal angle value on input entered
@@ -332,7 +375,6 @@ namespace ComputerGraphics {
 
             //negative angle
             if (negMatch.Success) {
-                Console.WriteLine("negMatch.");
                 angleValue = Double.Parse(RotationValueTb.Text.Replace("-", ""));
                 if (IsInValidRange(angleValue)) {
                     RotationSlider.Value = angleValue * -1;
@@ -344,7 +386,6 @@ namespace ComputerGraphics {
             }
             //positive angle
             else if (posMatch.Success) {
-                Console.WriteLine("posMatch.");
                 angleValue = Double.Parse(RotationValueTb.Text);
                 if (IsInValidRange(angleValue)) {
                     RotationSlider.Value = angleValue;
@@ -357,7 +398,6 @@ namespace ComputerGraphics {
             //illegal input
             else {
                 if (textBox.Text != "-") {
-                    Console.WriteLine("illegal input");
                     textBox.Text = "";
                     DisplayIllegalValueNotificiation(illegalInputMsg);
                 }
@@ -365,6 +405,7 @@ namespace ComputerGraphics {
             return;
         }
 
+        //notification msg on illegal operation from user, such as wrong input:
         private void DisplayIllegalValueNotificiation(string msg = "", bool display = true) {
             if (UserNotificationBorder != null && UserNotification != null) {
                 UserNotificationBorder.Visibility = display ? Visibility.Visible : Visibility.Hidden;
@@ -372,21 +413,59 @@ namespace ComputerGraphics {
             }
         }
 
+        //angle value range validity
         private bool IsInValidRange(double angleValue) {
             return angleValue >= 0 && angleValue <= 360;
         }
 
+        //display or hide help windows on toggle
         public void OnBtnHelpClicked(object sender, RoutedEventArgs e) {
+            DisplayIllegalValueNotificiation("",false);
             helpWindow.Visibility = helpWindow.IsVisible ? Visibility.Hidden : Visibility.Visible;
         }
 
         private void OnProjectionChanged(object sender, RoutedEventArgs e) {
-            Console.WriteLine("OnProjectionChanged");
             if(myCanvas != null) {
                 DrawProjection();
-                OnBtnApplyScalingClicked(null, null);
             }
         }
+
+        private void OnInvisSurfaceBtnClicked(object sender, RoutedEventArgs e) {
+
+            if(showHiddenSurfaceCb.Content.ToString().Contains("Show")) {
+                Console.WriteLine("OnDeepSurfaceBtnClicked with Show");
+
+                showHiddenSurfaceCb.Content = "Hide invisible surfaces";
+                showInvisibleSurface = true;
+            }
+            else {
+                showHiddenSurfaceCb.Content = "Show invisible surfaces";
+                Console.WriteLine("OnDeepSurfaceBtnClicked with Hide");
+                showInvisibleSurface = false;
+            }
+            DrawProjection(false);
+        }
+
+        //fill polygons with solid or transperant color according to configuration:
+        private void FillPolygons(bool? forceFill = null) {
+            var transperentPoly = new Polygon();
+
+            if(!(forceFill == null)) {
+                showInvisibleSurface = forceFill.Value;
+            }
+
+            Console.WriteLine("FillPolygons : " + showInvisibleSurface);
+            foreach (var myPoly in parser.polygonList) {
+                if (showInvisibleSurface) {
+                    myPoly.poly.Fill = transperentPoly.Fill;
+                }
+                else {
+                    myPoly.poly.Fill = Brushes.AliceBlue;
+                }
+            }
+        }
+
+
 
     }
 }
